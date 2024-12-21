@@ -90,7 +90,7 @@ jobs:
 
           # Create directory if it doesn't exist
           if [ ! -d "/home/${{ secrets.EC2_USER }}/izistore-backend-microservices" ]; then
-            mkdir -p "/home/${{ secrets.EC2_USER }}/izistore-backend-microservices"
+            mkdir /home/${{ secrets.EC2_USER }}/izistore-backend-microservices
           fi
 
 
