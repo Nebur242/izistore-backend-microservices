@@ -59,12 +59,6 @@ jobs:
             done
           fi
 
-      - name: Push Docker images
-        run: |
-          for service in $AFFECTED; do
-            docker push izistore/$service
-          done
-
   deploy:
     name: Deploy Changed Services
     runs-on: ubuntu-latest
