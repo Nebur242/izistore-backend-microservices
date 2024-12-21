@@ -45,7 +45,8 @@ jobs:
       - name: Determine affected projects
         id: affected
         run: |
-          echo "::set-output name=affected_projects::$(npx nx affected --target=build --base=main~1 --head=HEAD)"
+          BASE=$(git rev-parse --verify main~1 || echo "main")
+          echo "::set-output name=affected_projects::$(npx nx affected --target=build --base=$BASE --head=HEAD)"
 
       - name: Build affected projects
         run: npx nx affected --target=build --base=main~1 --head=HEAD
