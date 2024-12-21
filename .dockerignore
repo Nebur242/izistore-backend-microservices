@@ -1,4 +1,31 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
+# Node modules
+node_modules
+
+# Logs
+logs
+*.log
+
+# Dependency directories
+dist
+build
+
+# Environment files
+.env
+
+# NX cache
+.tmp
+workspace.json.bak
+
+# Docker-specific files
+Dockerfile*
+docker-compose*
+
+# Misc
+.vscode
+.idea
+*.iml
+.DS_Store
+*.swp
 
 # compiled output
 dist
@@ -41,5 +68,3 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 apps/**/*/.nx/*
-
-.env

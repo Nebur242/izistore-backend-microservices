@@ -2,7 +2,10 @@
   "name": "@izistore-backend/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start:nx-deamon": "node node_modules/.bin/nx daemon --start",
+    "api-gateway:dev": "node node_modules/.bin/nx serve api-gateway --watch"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^10.0.2",

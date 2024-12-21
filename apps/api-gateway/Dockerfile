@@ -1,0 +1,23 @@
+# Use base image
+FROM node:18
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Copy the root package.json and package-lock.json
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm install
+
+# Copy NX workspace and specific service source code
+COPY . .
+
+# Build the specific service
+RUN npx nx build api-gateway
+
+# Expose port
+EXPOSE 3000
+
+# Start the built service
+CMD ["node", "dist/apps/api-gateway/main"]

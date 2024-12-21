@@ -27,7 +27,8 @@
       },
       "configurations": {
         "development": {
-          "buildTarget": "api-gateway:build:development"
+          "buildTarget": "api-gateway:build:development",
+          "watch": true
         },
         "production": {
           "buildTarget": "api-gateway:build:production"
