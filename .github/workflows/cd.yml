@@ -47,11 +47,17 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and tag Docker images
+      - name: Build and push Docker images using docker-compose
         run: |
-          for service in $AFFECTED; do
-            docker build -t izistore/$service ./apps/$service
-          done
+          if [ "$AFFECTED" = "api-gateway" ]; then
+            docker ompose build
+            docker compose push
+          else
+            for service in $AFFECTED; do
+              docker compose build $service
+              docker compose push $service
+            done
+          fi
 
       - name: Push Docker images
         run: |
