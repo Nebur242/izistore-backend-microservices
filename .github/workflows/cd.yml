@@ -45,7 +45,7 @@ jobs:
           AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
           if [ -z "$AFFECTED" ]; then
               echo "No affected services. Deploying all services."
-              AFFECTED="api-gateway"
+              AFFECTED=api-gateway
           fi
           echo "AFFECTED=$AFFECTED" >> $GITHUB_ENV
 
