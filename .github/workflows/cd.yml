@@ -27,7 +27,7 @@ jobs:
       - name: Fetch Doppler Secrets
         run: |
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
-          doppler secrets --project izistore --config-dir prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
+          doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
