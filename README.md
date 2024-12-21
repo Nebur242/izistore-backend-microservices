@@ -1,82 +1,84 @@
-# IzistoreBackend
+# Software Architecture for Izistore Platform API
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## 1. **Overview**
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+Izistore is a platform that allows users to generate multiple e-commerce stores. Users can subscribe to a store and manage their data via a multi-tenant architecture. The proposed backend will leverage:
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- **Microservice Architecture**
+- **NestJS** (Backend Framework)
+- **Redis** (Inter-service communication)
+- **Auth0** (Authentication with Multi-tenant DB isolation)
+- **NX** (Monorepo for managing services)
+- **Docker** (Containerization for deployment)
+- **GitHub Actions** (CI/CD Workflow)
 
-## Finish your CI setup
+---
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/jA4noHeOSL)
+## 2. **Key Requirements**
 
+1. **Multi-tenant Authentication**
+   - Use **Auth0** for managing authentication and authorization.
+   - Each tenant has an isolated database.
+   - Auth0 to issue tokens, which are validated within microservices.
+2. **Microservices**
+   - Each business logic encapsulated into a separate microservice.
+   - Use **Redis** as the broker for inter-service communication.
+3. **Monorepo Setup**
+   - Use **NX** to organize and manage services in a scalable way.
+4. **CI/CD Pipeline**
+   - GitHub Actions to build, test, and deploy the services with Docker.
+5. **Containerization**
+   - Use **Docker** to deploy the microservices.
+6. **Local Development Support**
+   - Use volume mounts and override settings to enable hot-reloading during development.
 
-## Run tasks
+---
 
-To run the dev server for your app, use:
+## 3. **System Architecture**
 
-```sh
-npx nx serve api-gateway
+### 3.1 **Microservices**
+
+| Microservice     | Responsibilities                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| **Auth Service** | Handles user authentication using Auth0, tenant-based logic, and token validation. |
+| **User Service** | Manages user profiles, subscription, and store metadata. Communicates via Redis.   |
+
+### 3.2 **API Gateway**
+
+- The **API Gateway** only validates incoming requests and routes them to their respective microservices.
+- Authentication tokens are validated via the Auth Service.
+- Redis is used for inter-service communication.
+
+### 3.3 **Communication**
+
+- **API Gateway**: Central entry point for client requests. It routes requests to the relevant microservices.
+- **Redis**: Pub/Sub for real-time communication between services.
+- **NestJS Microservices**: Microservices communicate through Redis transport.
+
+---
+
+## 4. **Monorepo Structure with NX**
+
+```
+izistore-backend/                # Root workspace
+├── apps/                       # API Gateway and Microservices
+│   ├── api-gateway/            # API Gateway
+│   ├── auth-service/           # Authentication Service
+│   ├── user-service/           # User Management Service
+│   ├── store-service/          # Store Management Service
+│   └── ...                     # Other services
+│
+├── libs/                       # Shared libraries
+│   ├── common/                 # Common utilities
+│   ├── redis-client/           # Redis Pub/Sub utility
+│   ├── auth/                   # Authentication logic shared across services
+│
+├── docker/                     # Docker configurations
+└── .github/                    # GitHub workflows
 ```
 
-To create a production bundle:
+---
 
-```sh
-npx nx build api-gateway
-```
+## 5. **Separate CI and CD Pipelines with GitHub Actions**
 
-To see all available targets to run for a project, run:
-
-```sh
-npx nx show project api-gateway
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/nest:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/node:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+The CI and CD workflows are now split into two separate files for clarity and modularity.
