@@ -49,8 +49,10 @@ jobs:
 
       - name: Build and push Docker images using docker-compose
         run: |
-          docker compose build
-          docker compose push
+          for service in $AFFECTED; do
+             docker compose build $service
+             docker push nebur242/izistore-backend-microservices:$service
+           done
 
   deploy:
     name: Deploy Changed Services
