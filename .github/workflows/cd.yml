@@ -50,7 +50,7 @@ jobs:
       - name: Build and push Docker images using docker-compose
         run: |
           if [ "$AFFECTED" = "api-gateway" ]; then
-            docker ompose build
+            docker compose build
             docker compose push
           else
             for service in $AFFECTED; do
