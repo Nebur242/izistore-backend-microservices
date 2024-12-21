@@ -68,6 +68,30 @@ jobs:
     needs: docker
 
     steps:
-      - name: Deploy to server
+      # 2. Set up SSH Key
+      - name: Set up SSH Key
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+
+        # 3. SSH into EC2 and Deploy
+      - name: Deploy on EC2
+        run: |
+          ssh -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          # Update the system and Docker
+          sudo yum update -y
+
+          # Log in to DockerHub
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+          # Pull updated images
+          cd /home/${{ secrets.EC2_USER }}/izistore-backend-microservices
+          docker-compose pull
+
+          # Restart the services
+          docker-compose up -d
+          EOF
+
+      - name: Deployed to server
         run: |
           echo "Done!";
