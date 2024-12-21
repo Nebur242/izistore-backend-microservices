@@ -45,14 +45,15 @@ jobs:
       - name: Determine affected projects
         id: affected
         run: |
-          BASE=$(git rev-parse --verify main~1 || echo "main")
-          echo "::set-output name=affected_projects::$(npx nx affected --target=build --base=$BASE --head=HEAD)"
+          BASE_BRANCH=$(git rev-parse --verify main~1 || echo main)
+          echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
+          echo "AFFECTED_PROJECTS=$(npx nx print-affected --target=build --base=$BASE_BRANCH --head=HEAD)" >> $GITHUB_ENV
 
       - name: Build affected projects
-        run: npx nx affected --target=build --base=main~1 --head=HEAD
+        run: npx nx affected --target=build --base=$BASE_BRANCH --head=HEAD
 
       - name: Run tests for affected projects
-        run: npx nx affected --target=test --base=main~1 --head=HEAD
+        run: npx nx affected --target=test --base=$BASE_BRANCH --head=HEAD
 
       - name: Run linting for affected projects
-        run: npx nx affected --target=lint --base=main~1 --head=HEAD
+        run: npx nx affected --target=lint --base=$BASE_BRANCH --head=HEAD
