@@ -26,8 +26,7 @@ jobs:
         run: |
           BASE_BRANCH=$(git rev-parse --verify main~1 || echo main)
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
-          AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
-          echo "AFFECTED=$AFFECTED" >> $GITHUB_ENV
+          npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
