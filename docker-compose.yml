@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: ./apps/api-gateway/Dockerfile
-    image: nebur242/izistore-backend-microservices:latest
+    image: nebur242/izistore-backend-microservices:api-gateway
     container_name: izistore_api_gateway
     ports:
       - "3000:3000"

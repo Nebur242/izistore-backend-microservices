@@ -51,7 +51,7 @@ jobs:
         run: |
           for service in $AFFECTED; do
              docker compose build $service
-             docker push nebur242/izistore-backend-microservices:$service
+             docker push ${{ secrets.DOCKER_USERNAME }}/izistore-backend-microservices:$service
            done
 
   deploy:
