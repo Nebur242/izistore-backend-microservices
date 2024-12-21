@@ -83,7 +83,7 @@ jobs:
         # 3. SSH into EC2 and Deploy
       - name: Deploy on EC2
         run: |
-          ssh -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -t -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           # Update the system and Docker
           sudo yum update -y
 
