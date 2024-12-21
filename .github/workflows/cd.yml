@@ -68,6 +68,12 @@ jobs:
     needs: docker
 
     steps:
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       # 2. Set up SSH Key
       - name: Set up SSH Key
         run: |
@@ -80,9 +86,6 @@ jobs:
           ssh -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           # Update the system and Docker
           sudo yum update -y
-
-          # Log in to DockerHub
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
           # Pull updated images
           cd /home/${{ secrets.EC2_USER }}/izistore-backend-microservices
