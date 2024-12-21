@@ -85,8 +85,7 @@ jobs:
           # Update the system and Docker
           sudo yum update -y
 
-          #List folders
-          cd / && pwd && ls -a
+
 
           # Create directory if it doesn't exist
           if [ ! -d "/home/${{ secrets.EC2_USER }}/izistore-backend-microservices" ]; then
@@ -96,6 +95,10 @@ jobs:
 
           # Pull updated images
           cd /home/${{ secrets.EC2_USER }}/izistore-backend-microservices
+
+          #List folders
+          pwd && ls -a
+
           docker-compose pull
 
           # Restart the services
