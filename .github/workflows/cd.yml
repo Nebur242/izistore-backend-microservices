@@ -93,16 +93,24 @@ jobs:
           fi
 
 
+          #Copy Docker Compose from Github
+          echo "copy docker compose to server:"
+          scp -i ec2_key.pem /home/runner/work/izistore-backend/izistore-backend/docker-compose.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/izistore-backend-microservices/docker-compose.yml
+          scp -i ec2_key.pem /home/runner/work/izistore-backend/izistore-backend/.env ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/izistore-backend-microservices/.env
+
+          # Debugging: Log Docker Hub login status on EC2
+          sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          sudo docker info
+
           # Pull updated images
           cd /home/${{ secrets.EC2_USER }}/izistore-backend-microservices
-
-          #List folders
-          pwd && ls -a
-
+          echo "docker-compose pull command:"
           docker-compose pull
-
-          # Restart the services
+          echo "docker-compose up -d command:"
           docker-compose up -d
+
+          # List images to verify if they exist on the EC2 instance
+          docker images
           EOF
 
       - name: Deployed to server
