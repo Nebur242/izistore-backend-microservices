@@ -104,7 +104,6 @@ jobs:
           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
 
           scp -v -i ec2_key.pem /home/runner/work/izistore-backend/izistore-backend/docker-compose.yml $EC2_USER@$EC2_HOST:/home/$EC2_USER/izistore-backend-microservices/docker-compose.yml
-          # scp -v -i ec2_key.pem /home/runner/work/izistore-backend/izistore-backend/.env $EC2_USER@$EC2_HOST:/home/$EC2_USER/izistore-backend-microservices/.env
 
           # Debugging: Log Docker Hub login status on EC2
           sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
