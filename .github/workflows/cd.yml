@@ -66,6 +66,9 @@ jobs:
     name: Deploy Changed Services
     runs-on: ubuntu-latest
     needs: docker
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
 
     steps:
       # 2. Set up SSH Key
@@ -76,33 +79,19 @@ jobs:
 
         # 3. SSH into EC2 and Deploy
       - name: Deploy on EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
-          chmod 600 ec2_key.pem
-
-          # Check if EC2_HOST and EC2_USER are correctly set
-          echo "EC2 Host: $EC2_HOST"
-          echo "EC2 User: $EC2_USER"
-
-          ssh -t -o StrictHostKeyChecking=no -i ec2_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+          sudo ssh -t -o StrictHostKeyChecking=no -i ec2_key.pem $EC2_USER@$EC2_HOST << 'EOF'
 
           # Update the system and Docker
           sudo yum update -y
 
-
           # Create directory if it doesn't exist
           if [ ! -d "/home/$EC2_USER/izistore-backend-microservices" ]; then
-            mkdir -p /home/$EC2_USER/izistore-backend-microservices
+            mkdir -p "/home/${{ secrets.EC2_USER }}/izistore-backend-microservices"
           fi
-
 
           #Copy Docker Compose from Github
           echo "copy docker compose to server:"
-          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
-
           scp -v -i ec2_key.pem /home/runner/work/izistore-backend/izistore-backend/docker-compose.yml $EC2_USER@$EC2_HOST:/home/$EC2_USER/izistore-backend-microservices/docker-compose.yml
 
           # Debugging: Log Docker Hub login status on EC2
