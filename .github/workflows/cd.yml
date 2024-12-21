@@ -49,15 +49,10 @@ jobs:
 
       - name: Build and push Docker images using docker-compose
         run: |
-          if [ "$AFFECTED" = "api-gateway" ]; then
-            docker compose build
-            docker compose push
-          else
-            for service in $AFFECTED; do
-              docker compose build $service
-              docker compose push $service
-            done
-          fi
+          for service in $AFFECTED; do
+             docker compose build $service
+             docker compose push nebur242/izistore-backend-microservices$service
+           done
 
   deploy:
     name: Deploy Changed Services
