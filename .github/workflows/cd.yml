@@ -80,6 +80,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install rsync -y
+
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -88,6 +91,7 @@ jobs:
       - name: Copy Files to EC2
         run: |
           scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:/home/${{secrets.EC2_USER}}/izistore-backend-microservices
+          rsync -avz --exclude='.git' -e "ssh -o StrictHostKeyChecking=no" ./ $USER@$HOST:/home/${{secrets.EC2_USER}}/izistore-backend-microservices
 
       - name: Pull Images from Docker Hub and Deploy to Kind Cluster
         run: |
