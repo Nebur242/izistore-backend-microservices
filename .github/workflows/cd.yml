@@ -82,9 +82,6 @@ jobs:
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-      - name: Copy Files to EC2
-        run: |
-          scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:/home/${{secrets.EC2_USER}}/izistore-backend-microservices
 
       - name: Deploy docker image to EC2
         uses: appleboy/ssh-action@master
@@ -94,11 +91,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |-
             sudo yum update
+            sudo rpm --import 'https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key'
+            curl -sLf --retry 3 --tlsv1.2 --proto "=https" 'https://packages.doppler.com/public/cli/config.rpm.txt' | sudo tee /etc/yum.repos.d/doppler-cli.repo
+            sudo yum update -y && sudo yum install doppler
+            doppler --version
             sudo yum install docker.io -y
             sudo rm /usr/local/bin/docker-compose
-            sudo ln -s /Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose /usr/local/bin/docker-compose
+            sudo curl -SL https://github.com/docker/compose/releases/download/v2.32.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:/home/${{secrets.EC2_USER}}/izistore-backend-microservices
             sudo cd /home/${{secrets.EC2_USER}}/izistore-backend-microservices
-            sudo ls -a
+            doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
+            sudo docker-compose up -d
 
       - name: Optional - Post Deployment Steps
         run: echo "Deployment Complete!"
