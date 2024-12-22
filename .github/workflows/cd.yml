@@ -79,17 +79,17 @@ jobs:
                 image_file="$temp_dir/$(echo "\$image" | tr '/:' '_').tar"
                 echo "Saving image to temporary file: \$image_file"
                 if ! docker save -o "$image_file" "\$image"; then
-                    echo "Error: Failed to save image $image to $image_file."
+                    echo "Error: Failed to save image to \$image_file."
                     continue
                 fi
 
                 echo "Loading image into kind: $image_file"
                 if ! kind load image-archive "\$image_file"; then
-                    echo "Error: Failed to load image $image into kind."
+                    echo "Error: Failed to load image into kind."
                     continue
                 fi
 
-                echo "Image $image successfully loaded into kind."
+                echo "Image successfully loaded into kind."
             done
 
             # Cleanup
