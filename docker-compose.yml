@@ -2,7 +2,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: ./apps/api-gateway/Dockerfile
+      dockerfile: ./apps/api-gateway/Dockerfile.local
     image: nebur242/izistore-backend-microservices:api-gateway
     container_name: izistore_api_gateway
     ports:
