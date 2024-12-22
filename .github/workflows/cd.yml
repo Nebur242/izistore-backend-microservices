@@ -120,6 +120,6 @@ jobs:
             export KUBECONFIG=${KUBECONFIG_PATH}
 
             # Apply Kubernetes manifests
-            kubectl apply -f kubernetes/*.yaml
+            kubectl apply -f kubernetes/*.yml
             echo "Deployment Complete!"
           EOF
