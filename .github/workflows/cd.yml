@@ -59,8 +59,9 @@ jobs:
               ${{secrets.DOCKER_USERNAME}}/izistore-backend-microservices:api-gateway
             )
 
-            temp_dir=$(mktemp -d)
-
+            # Create temporary directory
+            temp_dir="/tmp/docker-images"
+            mkdir -p $temp_dir
 
             for image in "\${images[@]}"; do
                 echo "Pulling image: \$image"
