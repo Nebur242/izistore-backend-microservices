@@ -56,11 +56,11 @@ jobs:
             
             # Pull and load images to Kind cluster
             images=(
-              "nebur242/izistore-backend-microservices:api-gateway"
+              nebur242/izistore-backend-microservices:api-gateway
             )
 
             temp_dir="/tmp/docker-images"
-            mkdir -p "$temp_dir"
+            sudo mkdir -p "$temp_dir"
 
             for image in "${images[@]}"; do
                 if [ -z "$image" ]; then
@@ -93,7 +93,7 @@ jobs:
 
             # Cleanup
             echo "Cleaning up temporary files..."
-            rm -rf "$temp_dir"
+            sudo rm -rf "$temp_dir"
 
             # Set KUBECONFIG
             export KUBECONFIG=${KUBECONFIG_PATH}
