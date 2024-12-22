@@ -78,6 +78,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
       - name: Copy Files to EC2
         run: |
           scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:/home/${{secrets.EC2_USER}}/izistore-backend-microservices
