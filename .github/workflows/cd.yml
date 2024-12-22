@@ -63,29 +63,28 @@ jobs:
 
             for image in "\${images[@]}"; do
                 # Trim any leading/trailing whitespace and check if the image is empty
-                image=$(echo "$image" | xargs)
 
-                if [ -z "$image" ]; then
+                if [ -z "\$image" ]; then
                     echo "Skipping empty image name."
                     continue
                 fi
 
-                echo "Pulling image: $image"
-                if ! docker pull "$image"; then
+                echo "Pulling image: \$image"
+                if ! docker pull "\$image"; then
                     echo "Error: Failed to pull image $image from Docker Hub."
                     continue
                 fi
 
                 # Generate a unique tar file for the image
-                image_file="$temp_dir/$(echo "$image" | tr '/:' '_').tar"
-                echo "Saving image to temporary file: $image_file"
-                if ! docker save -o "$image_file" "$image"; then
+                image_file="$temp_dir/$(echo "\$image" | tr '/:' '_').tar"
+                echo "Saving image to temporary file: \$image_file"
+                if ! docker save -o "$image_file" "\$image"; then
                     echo "Error: Failed to save image $image to $image_file."
                     continue
                 fi
 
                 echo "Loading image into kind: $image_file"
-                if ! kind load image-archive "$image_file"; then
+                if ! kind load image-archive "\$image_file"; then
                     echo "Error: Failed to load image $image into kind."
                     continue
                 fi
