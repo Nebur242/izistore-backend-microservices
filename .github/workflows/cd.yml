@@ -61,7 +61,7 @@ jobs:
             echo "$temp_dir"
             sudo mkdir -p /tmp/docker-images
 
-            for image in "${images[@]}"; do
+            for image in "\${images[@]}"; do
                 # Trim any leading/trailing whitespace and check if the image is empty
                 image=$(echo "$image" | xargs)
 
