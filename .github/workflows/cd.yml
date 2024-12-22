@@ -15,53 +15,6 @@ jobs:
     name: Build and Deploy Changed Services
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
-
-      - name: Fetch Doppler Secrets
-        run: |
-          doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
-          doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Determine affected projects
-        id: affected
-        run: |
-          BASE_BRANCH=$(git rev-parse --verify main~1 || echo main)
-          echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
-          AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
-          if [ -z "$AFFECTED" ]; then
-              echo "No affected services. Deploying all services."
-              AFFECTED=api-gateway
-          fi
-          echo "AFFECTED=$AFFECTED" >> $GITHUB_ENV
-
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push Docker images using docker-compose
-        run: |
-          for service in $AFFECTED; do
-             docker compose build $service
-             docker push ${{ secrets.DOCKER_USERNAME }}/izistore-backend-microservices:$service
-           done
-
   deploy:
     name: Deploy Changed Services
     runs-on: ubuntu-latest
@@ -108,18 +61,30 @@ jobs:
             
             # Pull and load images to Kind cluster
             images=(
-              nebur242/izistore-backend-microservices:api-gateway
+              ${{secrets.DOCKER_USERNAME}}/izistore-backend-microservices:api-gateway
             )
 
+            temp_dir=$(mktemp -d)
+
+
             for image in "\${images[@]}"; do
-              docker pull \$image
-              kind load docker-image \$image
+                echo "Pulling image: \$image"
+                docker pull \$image
+                echo "Saving image to tmp file: \$image"
+                docker save -o \$temp_dir/images.tar \$image
+                echo "Loading image to kind: \$image"
+                kind load image-archive \$temp_dir/images.tar
+                echo "Image \$image loaded to Kind"
             done
+
+            # Clean temp dir
+            rm -rf \$temp_dir
 
             # Set KUBECONFIG
             export KUBECONFIG=${KUBECONFIG_PATH}
 
             # Apply Kubernetes manifests
-            kubectl apply -f kubernetes/*.yml
+            echo "Applying kubernetes manifests"
+            kubectl apply -f kubernetes/*.yaml
             echo "Deployment Complete!"
           EOF
