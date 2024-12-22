@@ -56,24 +56,30 @@ jobs:
             
             # Pull and load images to Kind cluster
             images=(
-              ${{secrets.DOCKER_USERNAME}}/izistore-backend-microservices:api-gateway
+              "${{secrets.DOCKER_USERNAME}}/izistore-backend-microservices:api-gateway"
             )
 
-            # Create temporary directory
             temp_dir="/tmp/docker-images"
             mkdir -p "$temp_dir"
 
-            for image in "\${images[@]}"; do
-                echo "Pulling image: \$image"
-                docker pull \$image
-                echo "Saving image to tmp file: \$image"
-                docker save -o $temp_dir/images.tar $image
-                echo "Loading image to kind: \$image"
-                kind load image-archive $temp_dir/images.tar
-                echo "Image \$image loaded to Kind"
+            for image in "${images[@]}"; do
+                echo "Pulling image: $image"
+                docker pull "$image"
+
+                # Generate a unique tar file for each image
+                image_file="$temp_dir/$(echo $image | tr '/:' '_').tar"
+
+                echo "Saving image to temporary file: $image_file"
+                docker save -o "$image_file" "$image"
+
+                echo "Loading image to kind: $image_file"
+                kind load image-archive "$image_file"
+
+                echo "Image $image loaded to Kind"
             done
 
-            # Clean temp dir
+            # Cleanup
+            echo "Cleaning up temporary files..."
             rm -rf "$temp_dir"
 
             # Set KUBECONFIG
@@ -81,6 +87,6 @@ jobs:
 
             # Apply Kubernetes manifests
             echo "Applying kubernetes manifests"
-            kubectl apply -f kubernetes/*.yaml
+            kubectl apply -f kubernetes/*.yml
             echo "Deployment Complete!"
           EOF
