@@ -90,7 +90,6 @@ jobs:
           # Create SSH key file
           echo ${{secrets.EC2_SSH_PRIVATE_KEY}} > private_key.pem
           chmod 600 private_key.pem
-          scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:${EC2_TARGET_PATH}
           rsync -avz --exclude='.git' -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" ./ ${EC2_USER}@${EC2_HOST}:${EC2_TARGET_PATH}
 
       - name: Pull Images from Docker Hub and Deploy to Kind Cluster
