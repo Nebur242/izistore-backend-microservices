@@ -56,26 +56,39 @@ jobs:
             
             # Pull and load images to Kind cluster
             images=(
-              "${{secrets.DOCKER_USERNAME}}/izistore-backend-microservices:api-gateway"
+              "nebur242/izistore-backend-microservices:api-gateway"
             )
 
             temp_dir="/tmp/docker-images"
             mkdir -p "$temp_dir"
 
             for image in "${images[@]}"; do
+                if [ -z "$image" ]; then
+                    echo "Skipping empty image name."
+                    continue
+                fi
+
                 echo "Pulling image: $image"
-                docker pull "$image"
+                if ! docker pull "$image"; then
+                    echo "Error: Failed to pull image $image from Docker Hub."
+                    continue
+                fi
 
-                # Generate a unique tar file for each image
-                image_file="$temp_dir/$(echo $image | tr '/:' '_').tar"
-
+                # Generate a unique tar file for the image
+                image_file="$temp_dir/$(echo "$image" | tr '/:' '_').tar"
                 echo "Saving image to temporary file: $image_file"
-                docker save -o "$image_file" "$image"
+                if ! docker save -o "$image_file" "$image"; then
+                    echo "Error: Failed to save image $image to $image_file."
+                    continue
+                fi
 
-                echo "Loading image to kind: $image_file"
-                kind load image-archive "$image_file"
+                echo "Loading image into kind: $image_file"
+                if ! kind load image-archive "$image_file"; then
+                    echo "Error: Failed to load image $image into kind."
+                    continue
+                fi
 
-                echo "Image $image loaded to Kind"
+                echo "Image $image successfully loaded into kind."
             done
 
             # Cleanup
