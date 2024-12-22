@@ -11,14 +11,9 @@ on:
       - closed
 
 jobs:
-  docker:
-    name: Build and Deploy Changed Services
-    runs-on: ubuntu-latest
-
   deploy:
     name: Deploy Changed Services
     runs-on: ubuntu-latest
-    needs: docker
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }} # Use secrets for sensitive info
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
