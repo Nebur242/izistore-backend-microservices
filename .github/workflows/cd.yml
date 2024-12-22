@@ -97,6 +97,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
             cd ${EC2_TARGET_PATH}
 
+            # Add user to docker group if it doesn't exist and refresh session
+            if ! groups $EC2_USER | grep -q docker; then
+               sudo usermod -aG docker $EC2_USER
+               newgrp docker
+            fi
+
             # Login to Docker Hub (If needed for private images)
             docker login --username "${{secrets.DOCKER_USERNAME}}" -p "${{secrets.DOCKER_PASSWORD}}"
             
