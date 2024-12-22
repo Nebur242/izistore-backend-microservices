@@ -64,11 +64,11 @@ jobs:
 
             for image in ${images[@]}; do
 
-                if [ -z "${image}" ]; then
+                if [ -z "$image" ]; then
                     echo "Skipping empty image name."
                     continue
                 fi
-                
+
                 npx nx run $image:build
 
                 echo "nebur242/izistore-backend-microservices:$image dist/apps/$image" 
