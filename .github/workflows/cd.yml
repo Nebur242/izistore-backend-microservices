@@ -62,22 +62,22 @@ jobs:
             temp_dir="/tmp/docker-images"
             sudo mkdir -p /tmp/docker-images
 
-            for image in ${images[@]}; do
+            for image in \${images[@]}; do
 
-                if [ -z "$image" ]; then
+                if [ -z "\$image" ]; then
                     echo "Skipping empty image name."
                     continue
                 fi
 
-                npx nx run $image:build
+                npx nx run \$image:build
 
-                echo "nebur242/izistore-backend-microservices:$image dist/apps/$image" 
+                echo "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
 
-                docker build -t "nebur242/izistore-backend-microservices:$image dist/apps/$image" 
+                docker build -t "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
 
-                docker save -o "$temp_dir/$image.tar" "nebur242/izistore-backend-microservices:$image"
+                docker save -o "$temp_dir/\$image.tar" "nebur242/izistore-backend-microservices:\$image"
 
-                echo "$temp_dir/$image.tar"
+                echo "\$temp_dir/\$image.tar"
 
                 kind load image-archive "\$temp_dir/\$image.tar"
 
