@@ -98,7 +98,7 @@ jobs:
             cd ${EC2_TARGET_PATH}
 
             # Login to Docker Hub (If needed for private images)
-            echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username foo --password-stdin
+            docker login --username "${{secrets.DOCKER_USERNAME}}" -p "${{secrets.DOCKER_PASSWORD}}"
             
             # Pull and load images to Kind cluster
             images=(
