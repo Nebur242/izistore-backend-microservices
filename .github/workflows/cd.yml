@@ -95,8 +95,8 @@ jobs:
             cd ${EC2_TARGET_PATH}
 
             # Login to Docker Hub (If needed for private images)
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username foo --password-stdin
+            
             # Pull and load images to Kind cluster
             images=(
               nebur242/izistore-backend-microservices:api-gateway
