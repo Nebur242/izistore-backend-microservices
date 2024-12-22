@@ -55,46 +55,29 @@ jobs:
             docker login --username "${{secrets.DOCKER_USERNAME}}" -p "${{secrets.DOCKER_PASSWORD}}"
             
             # Pull and load images to Kind cluster
-            images=("nebur242/izistore-backend-microservices:api-gateway")
+            images=("api-gateway")
 
             temp_dir="/tmp/docker-images"
-            echo "$temp_dir"
             sudo mkdir -p /tmp/docker-images
 
+
             for image in "\${images[@]}"; do
-                # Trim any leading/trailing whitespace and check if the image is empty
 
                 if [ -z "\$image" ]; then
                     echo "Skipping empty image name."
                     continue
                 fi
 
-                echo "Pulling image: \$image"
-                if ! docker pull "\$image"; then
-                    echo "Error: Failed to pull image $image from Docker Hub."
-                    continue
-                fi
+                npx nx run \$image:build
 
-                # Generate a unique tar file for the image
-                image_file="$temp_dir/$(echo "\$image" | tr '/:' '_').tar"
-                echo "Saving image to temporary file: \$image_file"
-                if ! docker save -o "$image_file" "\$image"; then
-                    echo "Error: Failed to save image to \$image_file."
-                    continue
-                fi
+                docker build -t "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
 
-                echo "Loading image into kind: $image_file"
-                if ! kind load image-archive "\$image_file"; then
-                    echo "Error: Failed to load image into kind."
-                    continue
-                fi
+                docker save -o "\$temp_dir/\$image.tar" "nebur242/izistore-backend-microservices:\$image"
+
+                kind load image-archive "\$temp_dir/\$image.tar"
 
                 echo "Image successfully loaded into kind."
             done
-
-            # Cleanup
-            echo "Cleaning up temporary files..."
-            sudo rm -rf "$temp_dir"
 
             # Set KUBECONFIG
             export KUBECONFIG=${KUBECONFIG_PATH}
