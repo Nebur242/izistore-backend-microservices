@@ -43,6 +43,8 @@ jobs:
       - name: Pull Images from Docker Hub and Deploy to Kind Cluster
         run: |
           ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+            sudo su
+
             cd ${EC2_TARGET_PATH}
 
             # Add user to docker group if it doesn't exist and refresh session
@@ -60,19 +62,22 @@ jobs:
             temp_dir="/tmp/docker-images"
             sudo mkdir -p /tmp/docker-images
 
+            for image in ${images[@]}; do
 
-            for image in "\${images[@]}"; do
-
-                if [ -z "\$image" ]; then
+                if [ -z "${image}" ]; then
                     echo "Skipping empty image name."
                     continue
                 fi
+                
+                npx nx run $image:build
 
-                npx nx run \$image:build
+                echo "nebur242/izistore-backend-microservices:$image dist/apps/$image" 
 
-                docker build -t "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
+                docker build -t "nebur242/izistore-backend-microservices:$image dist/apps/$image" 
 
-                docker save -o "\$temp_dir/\$image.tar" "nebur242/izistore-backend-microservices:\$image"
+                docker save -o "$temp_dir/$image.tar" "nebur242/izistore-backend-microservices:$image"
+
+                echo "$temp_dir/$image.tar"
 
                 kind load image-archive "\$temp_dir/\$image.tar"
 
