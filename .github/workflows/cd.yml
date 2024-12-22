@@ -73,6 +73,8 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       EC2_HOST: ${{ secrets.EC2_HOST }}
       EC2_USER: ${{ secrets.EC2_USER }}
+      EC2_TARGET_PATH: /home/${{secrets.EC2_USER}}/izistore-backend-microservices
+      KUBECONFIG_PATH: /home/${{secrets.EC2_USER}}/.kube/config
 
     steps:
       - name: Checkout code
@@ -83,26 +85,32 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 
-      - name: Deploy docker image to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{secrets.EC2_USER}}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |-
-            sudo yum update
-            sudo rpm --import 'https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key'
-            curl -sLf --retry 3 --tlsv1.2 --proto "=https" 'https://packages.doppler.com/public/cli/config.rpm.txt' | sudo tee /etc/yum.repos.d/doppler-cli.repo
-            sudo yum update -y && sudo yum install doppler
-            doppler --version
-            sudo yum install docker.io -y
-            sudo rm /usr/local/bin/docker-compose
-            sudo curl -SL https://github.com/docker/compose/releases/download/v2.32.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:/home/${{secrets.EC2_USER}}/izistore-backend-microservices
-            sudo cd /home/${{secrets.EC2_USER}}/izistore-backend-microservices
-            doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
-            sudo docker-compose up -d
+      - name: Copy Files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -r ./ ${EC2_USER}@${EC2_HOST}:${EC2_TARGET_PATH}
 
-      - name: Optional - Post Deployment Steps
-        run: echo "Deployment Complete!"
+      - name: Pull Images from Docker Hub and Deploy to Kind Cluster
+        run: |
+          ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+            cd ${EC2_TARGET_PATH}
+
+            # Login to Docker Hub (If needed for private images)
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+            # Pull and load images to Kind cluster
+            images=(
+              nebur242/izistore-backend-microservices:api-gateway
+            )
+
+            for image in "\${images[@]}"; do
+              docker pull \$image
+              kind load docker-image \$image
+            done
+
+            # Set KUBECONFIG
+            export KUBECONFIG=${KUBECONFIG_PATH}
+
+            # Apply Kubernetes manifests
+            kubectl apply -f kubernetes/*.yaml
+            echo "Deployment Complete!"
+          EOF
