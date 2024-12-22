@@ -61,20 +61,20 @@ jobs:
 
             # Create temporary directory
             temp_dir="/tmp/docker-images"
-            mkdir -p $temp_dir
+            mkdir -p "$temp_dir"
 
             for image in "\${images[@]}"; do
                 echo "Pulling image: \$image"
                 docker pull \$image
                 echo "Saving image to tmp file: \$image"
-                docker save -o \$temp_dir/images.tar \$image
+                docker save -o $temp_dir/images.tar $image
                 echo "Loading image to kind: \$image"
-                kind load image-archive \$temp_dir/images.tar
+                kind load image-archive $temp_dir/images.tar
                 echo "Image \$image loaded to Kind"
             done
 
             # Clean temp dir
-            rm -rf \$temp_dir
+            rm -rf "$temp_dir"
 
             # Set KUBECONFIG
             export KUBECONFIG=${KUBECONFIG_PATH}
