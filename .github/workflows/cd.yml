@@ -77,7 +77,7 @@ jobs:
             images=("api-gateway")
 
             #swith kubectl context
-            kubectl config use-context "kind-\$KIND_CLUSTER"
+            kubectl config use-context kind-izistore-api
 
             for image in \${images[@]}; do
                 echo "Processing image: \$image"
@@ -98,7 +98,7 @@ jobs:
 
                  # Load image into Kind
                 echo "Loading image into Kind for \$image..."
-                kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=\$KIND_CLUSTER || { echo "Failed to load $image into Kind"; continue; }
+                kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=kind-izistore-api || { echo "Failed to load $image into Kind"; continue; }
 
                 # Apply Kubernetes manifests
                 echo "Applying Kubernetes manifests for \$image..."
