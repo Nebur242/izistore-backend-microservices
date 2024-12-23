@@ -65,7 +65,7 @@ jobs:
 
             # Install project dependencies
             echo "Installing project dependencies..."
-            pm install
+            npm install
 
             # Add user to docker group if it doesn't exist and refresh session
             if ! groups $EC2_USER | grep -q docker; then
@@ -73,8 +73,16 @@ jobs:
               newgrp docker
             fi
 
+            BASE_BRANCH=$(git rev-parse --verify main~1 || echo main)
+            echo "BASE_BRANCH=\$BASE_BRANCH" >> $GITHUB_ENV
+            AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
+            filtered=$(echo "\$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
+            echo "\$filtered"
+            AFFECTED="\$filtered"
+
+
             # Pull and load images to Kind cluster
-            images=("api-gateway")
+            images=("\$AFFECTED")
 
             #swith kubectl context
             kubectl config use-context kind-izistore-api
