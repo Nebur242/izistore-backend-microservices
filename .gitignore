@@ -43,5 +43,4 @@ Thumbs.db
 apps/**/*/.nx/*
 
 .env
-docker-compose.override.yml
 cd.test.yml
