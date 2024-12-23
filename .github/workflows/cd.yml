@@ -107,11 +107,11 @@ jobs:
               cp .env "dist/apps/\$image"
 
               echo "Building docker image: $image"
-              docker build -t "nebur242/izistore-backend-microservices:\$image-$(git rev-parse --short HEAD)"  "dist/apps/\$image"
+              docker build -t "nebur242/izistore-backend-microservices:\$image"  "dist/apps/\$image"
 
               # Load image into Kind
               echo "Loading image into Kind for \$image..."
-              kind load docker-image "nebur242/izistore-backend-microservices:\$image-$(git rev-parse --short HEAD)" --name=izistore-api || { echo "Failed to load $image into Kind"; continue; }
+              kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=izistore-api || { echo "Failed to load $image into Kind"; continue; }
 
               # Apply Kubernetes manifests
               echo "Applying Kubernetes manifests for \$image..."
