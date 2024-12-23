@@ -80,7 +80,7 @@ jobs:
                 docker build -t "nebur242/izistore-backend-microservices:\$image"  "dist/apps/\$image"
 
                 echo "Loading image into kind: \$image"
-                if ! kind load docker-image "nebur242/izistore-backend-microservices:\$image"; then
+                if ! kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=izistore-api ; then
                    echo "Error: Failed to load image into kind."
                    continue
                 fi
