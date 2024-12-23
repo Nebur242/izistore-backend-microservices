@@ -24,6 +24,8 @@ jobs:
       EC2_TARGET_PATH: /home/${{secrets.EC2_USER}}/izistore-backend-microservices
       KUBECONFIG_PATH: /home/${{secrets.EC2_USER}}/.kube/config
       KIND_CLUSTER: izistore-api
+      BASE_BRANCH: $(git rev-parse --verify main~1 || echo main)
+      AFFECTED: $(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
 
     steps:
       - name: Checkout code
@@ -73,9 +75,7 @@ jobs:
               newgrp docker
             fi
 
-            BASE_BRANCH=$(git rev-parse --verify main~1 || echo main)
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
             filtered=$(echo "\$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
             echo "\$filtered"
             AFFECTED="\$filtered"
