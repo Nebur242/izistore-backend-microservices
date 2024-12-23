@@ -54,7 +54,7 @@ jobs:
             fi
 
             # Login to Docker Hub (If needed for private images)
-            docker login --username "${{secrets.DOCKER_USERNAME}}" -p "${{secrets.DOCKER_PASSWORD}}"
+            # docker login --username "${{secrets.DOCKER_USERNAME}}" -p "${{secrets.DOCKER_PASSWORD}}"
             
             npm install -g nx
 
@@ -62,9 +62,6 @@ jobs:
 
             # Pull and load images to Kind cluster
             images=("api-gateway")
-
-            temp_dir="/tmp/docker-images"
-            sudo mkdir -p /tmp/docker-images
 
             for image in \${images[@]}; do
 
@@ -91,11 +88,11 @@ jobs:
                 echo "Image successfully loaded into kind."
             done
 
-            # Set KUBECONFIG
-            export KUBECONFIG=${KUBECONFIG_PATH}
+            #swith kubectl context
+            kubectl config use-context kind-izistore-api
 
             # Apply Kubernetes manifests
             echo "Applying kubernetes manifests"
-            sudo kubectl apply -f kubernetes/
+            kubectl apply -f kubernetes/
             echo "Deployment Complete!"
           EOF
