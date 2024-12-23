@@ -18,4 +18,4 @@ spec:
         - name: api-gateway
           image: nebur242/izistore-backend-microservices:api-gateway
           ports:
-            - containerPort: 80
+            - containerPort: 3000

@@ -8,8 +8,8 @@ spec:
   type: NodePort
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
-      nodePort: 30080
+      port: 80 # Kubernetes service port
+      targetPort: 3000 # Port in the container
+      nodePort: 30080 # Port exposed on the host
   selector:
     app: api-gateway
