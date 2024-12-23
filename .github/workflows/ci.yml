@@ -56,6 +56,8 @@ jobs:
           BASE_BRANCH=$(git rev-parse --verify main~1 || echo main)
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
           AFFECTED="api-gateway"
+          AFFECTED_TEST=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
+          echo $AFFECTED_TEST
           # AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
           # if [ -z "$AFFECTED" ]; then
           #   echo "No affected services. Deploying all services."

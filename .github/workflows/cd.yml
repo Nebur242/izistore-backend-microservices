@@ -69,8 +69,8 @@ jobs:
 
             # Add user to docker group if it doesn't exist and refresh session
             if ! groups $EC2_USER | grep -q docker; then
-               sudo usermod -aG docker $EC2_USER
-               newgrp docker
+              sudo usermod -aG docker $EC2_USER
+              newgrp docker
             fi
 
             # Pull and load images to Kind cluster
@@ -80,30 +80,30 @@ jobs:
             kubectl config use-context kind-izistore-api
 
             for image in \${images[@]}; do
-                echo "Processing image: \$image"
+              echo "Processing image: \$image"
 
-                if [ -z "\$image" ]; then
-                    echo "Skipping empty image name."
-                    continue
-                fi
+              if [ -z "\$image" ]; then
+                  echo "Skipping empty image name."
+                  continue
+              fi
 
-                echo "Building image: \$image"
-                nx run "\$image":build || { echo "Failed to build $image"; continue; }
+              echo "Building image: \$image"
+              nx run "\$image":build || { echo "Failed to build $image"; continue; }
 
-                echo "Copy env vars to \$image"
-                cp .env "dist/apps/\$image"
+              echo "Copy env vars to \$image"
+              cp .env "dist/apps/\$image"
 
-                echo "Building docker image: $image"
-                docker build -t "nebur242/izistore-backend-microservices:\$image"  "dist/apps/\$image"
+              echo "Building docker image: $image"
+              docker build -t "nebur242/izistore-backend-microservices:\$image"  "dist/apps/\$image"
 
-                 # Load image into Kind
-                echo "Loading image into Kind for \$image..."
-                kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=izistore-api || { echo "Failed to load $image into Kind"; continue; }
+              # Load image into Kind
+              echo "Loading image into Kind for \$image..."
+              kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=izistore-api || { echo "Failed to load $image into Kind"; continue; }
 
-                # Apply Kubernetes manifests
-                echo "Applying Kubernetes manifests for \$image..."
-                kubectl apply -f "kubernetes/\$image" || { echo "Failed to apply manifests for $image"; continue; }
-                echo "kubernetes config successfully set..."
+              # Apply Kubernetes manifests
+              echo "Applying Kubernetes manifests for \$image..."
+              kubectl apply -f "kubernetes/\$image" || { echo "Failed to apply manifests for $image"; continue; }
+              echo "kubernetes config successfully set..."
             done
 
             echo "Deployment Complete!"
