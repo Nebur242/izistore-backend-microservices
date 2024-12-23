@@ -56,6 +56,10 @@ jobs:
             # Login to Docker Hub (If needed for private images)
             docker login --username "${{secrets.DOCKER_USERNAME}}" -p "${{secrets.DOCKER_PASSWORD}}"
             
+            npm install -g nx
+
+            npm install
+
             # Pull and load images to Kind cluster
             images=("api-gateway")
 
@@ -69,11 +73,11 @@ jobs:
                     continue
                 fi
 
-                npx nx run \$image:build
+                nx run \$image:build
 
                 echo "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
 
-                docker build -t "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
+                docker build -t "nebur242/izistore-backend-microservices:\$image" "dist/apps/\$image" 
 
                 docker save -o "$temp_dir/\$image.tar" "nebur242/izistore-backend-microservices:\$image"
 
@@ -89,6 +93,6 @@ jobs:
 
             # Apply Kubernetes manifests
             echo "Applying kubernetes manifests"
-            kubectl apply -f kubernetes/*.yml
+            kubectl apply -f kubernetes/
             echo "Deployment Complete!"
           EOF

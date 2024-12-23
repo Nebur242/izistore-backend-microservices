@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: your-domain.com
+    - host: 54.162.246.133
       http:
         paths:
           - path: /api(/|$)(.*)
