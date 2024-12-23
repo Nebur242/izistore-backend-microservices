@@ -117,7 +117,7 @@ jobs:
               echo "Applying Kubernetes manifests for \$image..."
               kubectl apply -f "kubernetes/\$image" || { echo "Failed to apply manifests for $image"; continue; }
               echo "Kubernetes redeployment for \$image..."
-              kubectl rollout restart deployment/\$image
+              kubectl rollout restart deployment --selector=app=\$image
               echo "kubernetes config successfully set..."
             done
 
