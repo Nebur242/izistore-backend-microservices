@@ -73,17 +73,21 @@ jobs:
                     continue
                 fi
 
-                nx run \$image:build
+                echo "Building image: $image"
+                if ! npx nx run "$image":build; then
+                    echo "Error: Failed to build image $image"
+                    continue
+                fi
 
-                echo "nebur242/izistore-backend-microservices:\$image dist/apps/\$image" 
+                echo "Building docker image: $image"
+                docker build -t "nebur242/izistore-backend-microservices:\$image"  "dist/apps/\$image"
 
-                docker build -t "nebur242/izistore-backend-microservices:\$image" "dist/apps/\$image" 
-
-                docker save -o "$temp_dir/\$image.tar" "nebur242/izistore-backend-microservices:\$image"
-
-                echo "\$temp_dir/\$image.tar"
-
-                kind load image-archive "\$temp_dir/\$image.tar"
+                echo "Loading image into kind: $image"
+                if ! kind load docker-image "nebur242/izistore-backend-microservices:\$image"; then
+                   echo "Error: Failed to load image into kind."
+                   continue
+                fi
+                echo "Image successfully loaded into kind."
 
                 echo "Image successfully loaded into kind."
             done
