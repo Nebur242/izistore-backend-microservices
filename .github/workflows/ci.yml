@@ -76,19 +76,3 @@ jobs:
 
       - name: Run linting for affected projects
         run: npx nx affected --target=lint --base=$BASE_BRANCH --head=HEAD
-
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push Docker images using docker-compose
-        run: |
-          for service in "$AFFECTED"; do
-            echo "Building service \$service..."
-            docker build -t ${{ secrets.DOCKER_USERNAME }}/izistore-backend-microservices:$service dist/apps/$service
-            echo "Pushing service $service to dockerhub..."
-            docker push ${{ secrets.DOCKER_USERNAME }}/izistore-backend-microservices:$service
-            echo "Done successfully..."
-          done
