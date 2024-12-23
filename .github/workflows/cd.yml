@@ -98,7 +98,7 @@ jobs:
 
                  # Load image into Kind
                 echo "Loading image into Kind for \$image..."
-                kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=kind-izistore-api || { echo "Failed to load $image into Kind"; continue; }
+                kind load docker-image "nebur242/izistore-backend-microservices:\$image" --name=izistore-api || { echo "Failed to load $image into Kind"; continue; }
 
                 # Apply Kubernetes manifests
                 echo "Applying Kubernetes manifests for \$image..."
