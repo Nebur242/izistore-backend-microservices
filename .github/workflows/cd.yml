@@ -65,7 +65,7 @@ jobs:
 
             # Install project dependencies
             echo "Installing project dependencies..."
-            npm ci || npm install
+            pm install
 
             # Add user to docker group if it doesn't exist and refresh session
             if ! groups $EC2_USER | grep -q docker; then
