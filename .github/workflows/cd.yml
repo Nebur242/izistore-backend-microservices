@@ -96,6 +96,6 @@ jobs:
 
             # Apply Kubernetes manifests
             echo "Applying kubernetes manifests"
-            kubectl apply -f kubernetes/
+            kubectl apply --kubeconfig="\$KUBECONFIG" -f kubernetes/
             echo "Deployment Complete!"
           EOF
