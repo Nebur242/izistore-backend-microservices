@@ -57,7 +57,7 @@ jobs:
             sudo su
 
             # Switch to the deployment directory
-            cd \$EC2_TARGET_PATH
+            cd ${EC2_TARGET_PATH}
 
             # Install global dependencies
             echo "Installing global dependencies..."
