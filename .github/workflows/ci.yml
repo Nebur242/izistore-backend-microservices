@@ -85,7 +85,7 @@ jobs:
 
       - name: Build and push Docker images using docker-compose
         run: |
-          for service in $AFFECTED; do
+          for service in "$AFFECTED"; do
             echo "Building service $service..."
             docker build -t ${{ secrets.DOCKER_USERNAME }}/izistore-backend-microservices:$service dist/apps/$service
             echo "Pushing service $service to dockerhub..."
