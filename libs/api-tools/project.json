@@ -1,0 +1,44 @@
+{
+  "name": "api-tools",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api-tools/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project api-tools --web",
+  "targets": {
+    "test": {
+      "options": {
+        "cwd": "libs/api-tools",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\"}"
+        },
+        "command": "jest --passWithNoTests"
+      },
+      "metadata": {
+        "technologies": ["jest"],
+        "description": "Run Jest Tests",
+        "help": {
+          "command": "npx jest --help",
+          "example": {
+            "options": {
+              "coverage": true
+            }
+          }
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/jest.preset.js",
+        {
+          "externalDependencies": ["jest"]
+        }
+      ],
+      "outputs": ["{workspaceRoot}/coverage/libs/api-tools"],
+      "executor": "nx:run-commands",
+      "configurations": {},
+      "parallelism": true
+    }
+  }
+}

@@ -50,6 +50,21 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Determine Affected Services
+        run: |
+          AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
+          echo $AFFECTED
+          FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
+          echo $FILTERED_SERVICES
+          echo "$FILTERED_SERVICES" > affected-services.txt
+          echo "AFFECTED_SERVICES=$FILTERED_SERVICES" >> $GITHUB_ENV
+
+      - name: Upload Affected Services
+        uses: actions/upload-artifact@v3
+        with:
+          name: affected-services
+          path: affected-services.txt
+
       - name: Run linting for affected projects
         run: npx nx affected -t lint --base=origin/main --parallel=2
 
