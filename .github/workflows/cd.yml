@@ -29,18 +29,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Affected Services Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: affected-services
-
-      - name: Read Affected Services and Set Environment Variable
-        id: set-env
-        run: |
-          AFFECTED_SERVICES=$(cat affected-services.txt)
-          echo $AFFECTED_SERVICES
-          echo "AFFECTED_SERVICES=$AFFECTED_SERVICES" >> $GITHUB_ENV
-
       - name: Install rsync
         run: sudo apt-get update && sudo apt-get install rsync -y
 
