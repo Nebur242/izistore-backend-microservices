@@ -52,7 +52,7 @@ jobs:
           echo "$FILTERED_SERVICES" > affected-services.txt
 
       - name: Remove useless folder
-        run: rm -rf node_modules && rm -f .nx
+        run: rm -rf node_modules && rm -rf .nx
 
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.7.0
