@@ -51,8 +51,8 @@ jobs:
           echo $FILTERED_SERVICES
           echo "$FILTERED_SERVICES" > affected-services.txt
 
-      - name: Remove nodes_modules
-        run: rm -rf node_modules
+      - name: Remove useless folder
+        run: rm -rf node_modules && rm -f .nx
 
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.7.0
@@ -93,7 +93,7 @@ jobs:
 
             if [ -z "\$AFFECTED_SERVICES" ]; then
               echo "No affected services. Deploying all services."
-              exit 0
+              AFFECTED_SERVICES="api-gateway"
             fi
 
 
