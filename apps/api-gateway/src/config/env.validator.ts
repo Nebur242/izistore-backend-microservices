@@ -9,8 +9,6 @@ export function validateEnvironment(
     enableImplicitConversion: true, // Automatically converts types (e.g., strings to numbers)
   });
 
-  console.log(config);
-
   const errors = validateSync(validatedConfig, {
     skipMissingProperties: false,
   });
