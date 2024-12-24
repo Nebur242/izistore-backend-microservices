@@ -86,12 +86,11 @@ jobs:
             fi
 
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            echo "\$filtered"
             AFFECTED="\$AFFECTED_SERVICES"
 
             if [ -z "\$AFFECTED" ]; then
               echo "No affected services. Deploying all services."
-              AFFECTED="api-gateway"
+              exit 0
             fi
 
 
