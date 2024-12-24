@@ -50,11 +50,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Upload Affected Services
+        uses: actions/upload-artifact@v3
+        with:
+          name: affected-services
+          path: affected-services.txt
+
       - name: Run linting for affected projects
-        run: npx nx affected -t lint --base=origin/main --parallel=5
+        run: npx nx affected -t lint --base=origin/main --parallel=2
 
       - name: Build affected projects
-        run: npx nx affected -t build --base=origin/main --parallel=5
+        run: npx nx affected -t build --base=origin/main --parallel=2
 
       - name: Run tests for affected projects
-        run: npx nx affected -t test --base=origin/main --parallel=5
+        run: npx nx affected -t test --base=origin/main --parallel=2

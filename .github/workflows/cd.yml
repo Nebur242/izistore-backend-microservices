@@ -40,6 +40,14 @@ jobs:
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
           doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
 
+      - name: Determine Affected Services
+        run: |
+          AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
+          echo $AFFECTED
+          FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
+          echo $FILTERED_SERVICES
+          echo "$FILTERED_SERVICES" > affected-services.txt
+
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -74,11 +82,8 @@ jobs:
             fi
 
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            AFFECTED=$(npx nx show projects --affected --base=HEAD~1 --head=HEAD || echo "")
-            echo $AFFECTED
-            FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
-            echo $FILTERED_SERVICES
-            echo "AFFECTED_SERVICES=$FILTERED_SERVICES" >> $GITHUB_ENV
+            AFFECTED_SERVICES=\$(cat affected-services.txt)
+            echo "\$AFFECTED_SERVICES"
 
             if [ -z "\$AFFECTED_SERVICES" ]; then
               echo "No affected services. Deploying all services."
