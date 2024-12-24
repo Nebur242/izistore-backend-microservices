@@ -93,7 +93,13 @@ jobs:
             kubectl config use-context kind-izistore-api
 
             # Dump secret env vars
+            echo "Generating k8s secrets..."
+            mkdir -p kubernetes/secret
             kubectl create secret generic secret-env-vars --from-env-file=.env -o yaml --dry-run=client > kubernetes/secret/k8s-secret.yaml
+
+            # Apply the secrets to cluster            
+            echo "Applying k8s secrets..."
+            kubectl apply -f kubernetes/secret/k8s-secret.yaml
 
             for image in \${images[@]}; do
               echo "Processing image: \$image"
