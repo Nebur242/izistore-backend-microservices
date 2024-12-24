@@ -9,9 +9,6 @@ logs
 dist
 build
 
-# Environment files
-.env
-
 # NX cache
 .tmp
 workspace.json.bak

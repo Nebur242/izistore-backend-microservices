@@ -2,7 +2,7 @@
 FROM node:18-alpine AS build
 
 # Step 2: Set working directory inside the container
-WORKDIR /app
+WORKDIR /app/api-gateway
 
 # Step 3: Copy package.json and package-lock.json (if available) to the container
 COPY package*.json ./
