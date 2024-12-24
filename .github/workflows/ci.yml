@@ -55,6 +55,7 @@ jobs:
           AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
           echo $AFFECTED
           filtered=$(echo "\$AFFECTED_SERVICES" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
+           echo $filtered
           echo "$filtered" > affected-services.txt
           echo "AFFECTED_SERVICES=$filtered" >> $GITHUB_ENV
 
