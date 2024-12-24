@@ -20,4 +20,4 @@ RUN npx nx build api-gateway
 EXPOSE 3000
 
 # Start the built service
-CMD ["node", "dist/apps/api-gateway/main"]
+CMD ["npm", "dist/apps/api-gateway/main"]

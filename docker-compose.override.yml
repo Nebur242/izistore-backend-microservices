@@ -1,3 +1,0 @@
-services:
-  api-gateway:
-    command: npx nx run api-gateway:serve --configuration=development 

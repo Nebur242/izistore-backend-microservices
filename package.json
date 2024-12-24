@@ -3,17 +3,20 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start:nx-deamon": "node node_modules/.bin/nx daemon --start",
-    "api-gateway:dev": "node node_modules/.bin/nx serve api-gateway --watch",
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "api-gateway:dev": "docker compose -f docker-compose.yml up & docker compose -f apps/api-gateway/docker-compose.db.yml up & npx nx run api-gateway:serve --configuration=development",
+    "start:dev": "npm run api-gateway:dev"
   },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^10.0.2",
+    "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.2",
     "@nestjs/platform-express": "^10.0.2",
     "axios": "^1.6.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0"
   },
