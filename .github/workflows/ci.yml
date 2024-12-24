@@ -54,10 +54,10 @@ jobs:
         run: |
           AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
           echo $AFFECTED
-          filtered=$(echo "\$AFFECTED_SERVICES" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
-           echo $filtered
-          echo "$filtered" > affected-services.txt
-          echo "AFFECTED_SERVICES=$filtered" >> $GITHUB_ENV
+          FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
+          echo $FILTERED_SERVICES
+          echo "$FILTERED_SERVICES" > affected-services.txt
+          echo "AFFECTED_SERVICES=$FILTERED_SERVICES" >> $GITHUB_ENV
 
       - name: Upload Affected Services
         uses: actions/upload-artifact@v3

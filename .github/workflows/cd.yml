@@ -86,9 +86,8 @@ jobs:
             fi
 
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            filtered=$(echo "\$AFFECTED_SERVICES" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
             echo "\$filtered"
-            AFFECTED="\$filtered"
+            AFFECTED="\$AFFECTED_SERVICES"
 
             if [ -z "\$AFFECTED" ]; then
               echo "No affected services. Deploying all services."
@@ -113,6 +112,13 @@ jobs:
 
             for image in \${images[@]}; do
               echo "Processing image: \$image"
+
+              APP_DIR="apps/\$image"
+
+              if [ ! -d "\$APP_DIR" ]; then
+                echo "Directory $APP_DIR does not exist. Skipping \$APP."
+                continue
+              fi
 
               if [ -z "\$image" ]; then
                   echo "Skipping empty image name."
