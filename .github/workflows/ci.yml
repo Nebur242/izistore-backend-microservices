@@ -50,6 +50,21 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Determine Affected Services
+        run: |
+          BASE_BRANCH=$(git rev-parse --verify main || echo "")
+          if [ -z "$BASE_BRANCH" ]; then
+            BASE_BRANCH=HEAD
+          fi
+          AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD || echo "")
+          echo "$AFFECTED" > affected-services.txt
+
+      - name: Upload Affected Services
+        uses: actions/upload-artifact@v3
+        with:
+          name: affected-services
+          path: affected-services.txt
+
       - name: Run linting for affected projects
         run: npx nx affected -t lint --base=origin/main --parallel=2
 

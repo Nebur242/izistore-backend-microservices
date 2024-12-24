@@ -24,12 +24,21 @@ jobs:
       EC2_TARGET_PATH: /home/${{secrets.EC2_USER}}/izistore-backend-microservices
       KUBECONFIG_PATH: /home/${{secrets.EC2_USER}}/.kube/config
       KIND_CLUSTER: izistore-api
-      BASE_BRANCH: $(git rev-parse --verify main~1 || echo main)
-      AFFECTED: $(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Download Affected Services Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: affected-services
+
+      - name: Read Affected Services and Set Environment Variable
+        id: set-env
+        run: |
+          AFFECTED_SERVICES=$(cat affected-services.txt)
+          echo "AFFECTED_SERVICES=$AFFECTED_SERVICES" >> $GITHUB_ENV
 
       - name: Install rsync
         run: sudo apt-get update && sudo apt-get install rsync -y
@@ -76,7 +85,7 @@ jobs:
             fi
 
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            filtered=$(echo "\$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
+            filtered=$(echo "\$AFFECTED_SERVICES" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
             echo "\$filtered"
             AFFECTED="\$filtered"
 
