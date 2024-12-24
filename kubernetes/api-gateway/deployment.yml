@@ -19,3 +19,6 @@ spec:
           image: nebur242/izistore-backend-microservices:api-gateway
           ports:
             - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: secret-env-vars
