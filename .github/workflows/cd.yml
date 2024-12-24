@@ -40,6 +40,9 @@ jobs:
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
           doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Determine Affected Services
         run: |
           AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
@@ -47,6 +50,9 @@ jobs:
           FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
           echo $FILTERED_SERVICES
           echo "$FILTERED_SERVICES" > affected-services.txt
+
+      - name: Remove nodes_modules
+        run: rm -rf node_modules
 
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.7.0
