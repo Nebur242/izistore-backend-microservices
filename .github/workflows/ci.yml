@@ -50,11 +50,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run linting for affected projects
+        run: npx nx affected -t lint --parallel=2
+
       - name: Build affected projects
-        run: npx nx affected --target=build
+        run: npx nx affected -t build --parallel=2
 
       - name: Run tests for affected projects
-        run: npx nx affected --target=test
-
-      - name: Run linting for affected projects
-        run: npx nx affected --target=lint
+        run: npx nx affected -t test --parallel=2
