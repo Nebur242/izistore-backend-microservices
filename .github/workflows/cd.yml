@@ -86,16 +86,20 @@ jobs:
             fi
 
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            AFFECTED="\$AFFECTED_SERVICES"
+            AFFECTED=$(npx nx show projects --affected --base=HEAD~1 --head=HEAD || echo "")
+            echo $AFFECTED
+            FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
+            echo $FILTERED_SERVICES
+            echo "AFFECTED_SERVICES=$FILTERED_SERVICES" >> $GITHUB_ENV
 
-            if [ -z "\$AFFECTED" ]; then
+            if [ -z "\$AFFECTED_SERVICES" ]; then
               echo "No affected services. Deploying all services."
               exit 0
             fi
 
 
             # Pull and load images to Kind cluster
-            images=("\$AFFECTED")
+            images=("\$AFFECTED_SERVICES")
 
             #swith kubectl context
             kubectl config use-context kind-izistore-api
@@ -115,7 +119,7 @@ jobs:
               APP_DIR="apps/\$image"
 
               if [ ! -d "\$APP_DIR" ]; then
-                echo "Directory $APP_DIR does not exist. Skipping \$APP."
+                echo "Directory $APP_DIR does not exist. Skipping \$APP_DIR."
                 continue
               fi
 
