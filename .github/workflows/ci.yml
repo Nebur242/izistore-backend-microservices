@@ -51,10 +51,10 @@ jobs:
         run: npm install
 
       - name: Run linting for affected projects
-        run: npx nx affected -t lint --base=origin/main --parallel=2
+        run: npx nx affected -t lint --base=origin/main --parallel=5
 
       - name: Build affected projects
-        run: npx nx affected -t build --base=origin/main --parallel=2
+        run: npx nx affected -t build --base=origin/main --parallel=5
 
       - name: Run tests for affected projects
-        run: npx nx affected -t test --base=origin/main --parallel=2
+        run: npx nx affected -t test --base=origin/main --parallel=5
