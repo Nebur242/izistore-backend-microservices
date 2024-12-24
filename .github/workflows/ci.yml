@@ -50,34 +50,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Determine affected projects
-        id: affected
-        run: |
-          BASE_BRANCH=$(git rev-parse --verify main || git rev-parse --verify master || echo "")
-          if [ -z "$BASE_BRANCH" ]; then
-            echo "Base branch not found. Defaulting to HEAD."
-            BASE_BRANCH=HEAD
-          fi
-          echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
-
-          AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD || echo "api-gateway")
-          filtered=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
-          if [ -z "$filtered" ]; then
-            filtered="api-gateway"
-          fi
-          echo "AFFECTED=$filtered" >> $GITHUB_ENV
-
       - name: Build affected projects
-        run: npx nx affected --target=build --base=$BASE_BRANCH --head=HEAD
-        env:
-          BASE_BRANCH: ${{ env.BASE_BRANCH }}
+        run: npx nx affected --target=build
 
       - name: Run tests for affected projects
-        run: npx nx affected --target=test --base=$BASE_BRANCH --head=HEAD
-        env:
-          BASE_BRANCH: ${{ env.BASE_BRANCH }}
+        run: npx nx affected --target=test
 
       - name: Run linting for affected projects
-        run: npx nx affected --target=lint --base=$BASE_BRANCH --head=HEAD
-        env:
-          BASE_BRANCH: ${{ env.BASE_BRANCH }}
+        run: npx nx affected --target=lint
