@@ -24,6 +24,8 @@ jobs:
       EC2_TARGET_PATH: /home/${{secrets.EC2_USER}}/izistore-backend-microservices
       KUBECONFIG_PATH: /home/${{secrets.EC2_USER}}/.kube/config
       KIND_CLUSTER: izistore-api
+      BASE_BRANCH: $(git rev-parse --verify main~1 || echo main)
+      AFFECTED: $(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD)
 
     steps:
       - name: Checkout code
@@ -39,20 +41,6 @@ jobs:
         run: |
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
           doppler secrets --project izistore --config prd --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Determine Affected Services
-        run: |
-          AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
-          echo $AFFECTED
-          FILTERED_SERVICES=$(echo "$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | grep -v "api-tools" | tr '\n' ' ')
-          echo $FILTERED_SERVICES
-          echo "$FILTERED_SERVICES" > affected-services.txt
-
-      - name: Remove useless folder
-        run: rm -rf node_modules && rm -rf .nx
 
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.7.0
@@ -88,17 +76,18 @@ jobs:
             fi
 
             # echo "BASE_BRANCH=\$BASE_BRANCH"
-            AFFECTED_SERVICES=\$(cat affected-services.txt)
-            echo "\$AFFECTED_SERVICES"
+            filtered=$(echo "\$AFFECTED" | tr ' ' '\n' | grep -v "e2e" | tr '\n' ' ' | xargs)
+            echo "\$filtered"
+            AFFECTED="\$filtered"
 
-            if [ -z "\$AFFECTED_SERVICES" ]; then
+            if [ -z "\$AFFECTED" ]; then
               echo "No affected services. Deploying all services."
-              AFFECTED_SERVICES="api-gateway"
+              AFFECTED="api-gateway"
             fi
 
 
             # Pull and load images to Kind cluster
-            images=("\$AFFECTED_SERVICES")
+            images=("\$AFFECTED")
 
             #swith kubectl context
             kubectl config use-context kind-izistore-api
@@ -114,13 +103,6 @@ jobs:
 
             for image in \${images[@]}; do
               echo "Processing image: \$image"
-
-              APP_DIR="apps/\$image"
-
-              if [ ! -d "\$APP_DIR" ]; then
-                echo "Directory $APP_DIR does not exist. Skipping \$APP_DIR."
-                continue
-              fi
 
               if [ -z "\$image" ]; then
                   echo "Skipping empty image name."
