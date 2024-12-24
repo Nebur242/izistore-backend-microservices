@@ -38,6 +38,7 @@ jobs:
         id: set-env
         run: |
           AFFECTED_SERVICES=$(cat affected-services.txt)
+          echo $AFFECTED_SERVICES
           echo "AFFECTED_SERVICES=$AFFECTED_SERVICES" >> $GITHUB_ENV
 
       - name: Install rsync

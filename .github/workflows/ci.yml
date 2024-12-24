@@ -55,6 +55,7 @@ jobs:
           AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
           echo $AFFECTED
           echo "$AFFECTED" > affected-services.txt
+          echo "AFFECTED_SERVICES=$AFFECTED" >> $GITHUB_ENV
 
       - name: Upload Affected Services
         uses: actions/upload-artifact@v3
