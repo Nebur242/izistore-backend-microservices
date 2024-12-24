@@ -52,11 +52,8 @@ jobs:
 
       - name: Determine Affected Services
         run: |
-          BASE_BRANCH=$(git rev-parse --verify main || echo "")
-          if [ -z "$BASE_BRANCH" ]; then
-            BASE_BRANCH=HEAD
-          fi
-          AFFECTED=$(npx nx show projects --affected --base=$BASE_BRANCH --head=HEAD || echo "")
+          AFFECTED=$(npx nx show projects --affected --base=origin/main --head=HEAD || echo "")
+          echo $AFFECTED
           echo "$AFFECTED" > affected-services.txt
 
       - name: Upload Affected Services
