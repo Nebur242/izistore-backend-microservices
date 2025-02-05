@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm install --ignore-scripts
 
+      - name: Show affected projects
+        run: npx nx show projects --type app --affected --verbose
+
       - name: Get affected apps
         id: nx-affected
         run: |
