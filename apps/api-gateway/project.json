@@ -8,13 +8,16 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "webpack-cli build",
-        "args": ["node-env=production"],
-        "assets": ["apps/api-gateway/src/Dockerfile"]
+        "command": "webpack --config apps/api-gateway/webpack.config.js",
+        "args": [],
+        "assets": []
       },
       "configurations": {
         "development": {
-          "args": ["node-env=development"]
+          "command": "webpack --config apps/api-gateway/webpack.config.js --mode development"
+        },
+        "production": {
+          "command": "webpack --config apps/api-gateway/webpack.config.js --mode production"
         }
       }
     },

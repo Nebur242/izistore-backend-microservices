@@ -15,7 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@izistore/api-tools": ["libs/api-tools/src/index.ts"]
+      "@izistore/api-tools": ["libs/api-tools/src/index.ts"],
+      "@izistore/firebase": ["libs/firebase/src/index.ts"],
+      "@izistore/redis": ["libs/redis/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

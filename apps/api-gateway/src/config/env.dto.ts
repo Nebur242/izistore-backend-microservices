@@ -1,22 +1,6 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsString } from 'class-validator';
 
 export class EnvironmentVariables {
-  @IsNotEmpty()
-  @IsString()
-  DB_NAME: string;
-
-  @IsNotEmpty()
-  @IsString()
-  DB_PASSWORD: string;
-
-  @IsNotEmpty()
-  @IsString()
-  DB_PORT: string;
-
-  @IsNotEmpty()
-  @IsString()
-  DB_USER: string;
-
   @IsNotEmpty()
   @IsString()
   REDIS_PASSWORD: string;
@@ -32,4 +16,14 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsString()
   REDIS_USER: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  @IsString()
+  AUTH_SERVICE_PORT: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  @IsString()
+  AUTH_SERVICE_HOST: string;
 }

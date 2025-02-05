@@ -1,0 +1,19 @@
+{
+  "name": "@izistore/firebase",
+  "version": "0.0.1",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@nestjs/common": "^10.0.2",
+    "axios": "^1.6.0",
+    "@nestjs/passport": "^11.0.5",
+    "passport-firebase-jwt": "^1.2.1",
+    "firebase-admin": "^13.0.2",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/axios": "^4.0.0",
+    "rxjs": "^7.8.0"
+  },
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
+  "private": true
+}

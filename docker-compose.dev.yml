@@ -1,0 +1,93 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./apps/api-gateway/docker/Dockerfile.dev
+    ports:
+      - '3001:3001'
+    environment:
+      env_file: './apps/api-gateway/.env'
+    networks:
+      - internal_network
+      - external_network
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./apps/api-gateway
+          target: /usr/src/app/apps/api-gateway
+          ignore:
+            - node_modules/
+        - action: sync+restart
+          path: ./libs
+          target: /usr/src/app/apps/api-gateway
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./package.json
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./apps/auth-service/docker/Dockerfile.dev
+    ports:
+      - '3002:3002'
+    environment:
+      env_file: './apps/auth-service/.env'
+    networks:
+      - internal_network
+      - external_network # Added external network for Firebase connectivity
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./apps/auth-service
+          target: /usr/src/app/apps/auth-service
+          ignore:
+            - node_modules/
+        - action: sync+restart
+          path: ./libs
+          target: /usr/src/app/apps/auth-service
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./package.json
+
+  auth-db:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - internal_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - internal_network
+
+volumes:
+  auth_db_data:
+  redis_data:
+
+networks:
+  internal_network:
+    driver: bridge
+  external_network:
+    driver: bridge

@@ -1,0 +1,62 @@
+name: Production CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      affected: ${{ steps.nx-affected.outputs.affected }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get affected apps
+        id: nx-affected
+        run: |
+          AFFECTED=$(npx nx show projects --type app --affected)
+          echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
+
+  test-and-build:
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.affected != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npx nx affected --target=lint
+
+      #   - name: Run tests
+      #     run: npx nx affected --target=test --configuration=production --coverage
+
+      - name: Build applications
+        run: npx nx affected --target=build --configuration=production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/

@@ -1,2 +1,2 @@
 export * from './lib/api-tools.module';
-export * from './interceptors/transform.interceptor';
+export * from './lib/interceptors/transform.interceptor';

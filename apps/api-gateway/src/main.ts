@@ -14,6 +14,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
 import { TransformInterceptor } from '@izistore/api-tools';
+import { BaseRpcExceptionFilter } from '@nestjs/microservices';
 
 const defaultVersion = 1;
 const globalPrefix = 'api';
@@ -32,30 +33,33 @@ function setupSwagger(app: INestApplication): INestApplication {
 }
 
 function setupGlobalMiddlewares(app: INestApplication) {
-  return app
-    .useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        exceptionFactory(errors) {
-          return new BadRequestException({
-            statusCode: 400,
-            message: 'Bad Request',
-            errors: errors.reduce(
-              (acc, e) => [...acc, ...Object.values(e.constraints)],
-              []
-            ),
-          });
-        },
+  return (
+    app
+      .useGlobalPipes(
+        new ValidationPipe({
+          whitelist: true,
+          transform: true,
+          exceptionFactory(errors) {
+            return new BadRequestException({
+              statusCode: 400,
+              message: 'Bad Request',
+              errors: errors.reduce(
+                (acc, e) => [...acc, ...Object.values(e.constraints)],
+                []
+              ),
+            });
+          },
+        })
+      )
+      .useGlobalInterceptors(new TransformInterceptor())
+      // .useGlobalFilters(new BaseRpcExceptionFilter())
+      .setGlobalPrefix(globalPrefix)
+      .enableVersioning({
+        type: VersioningType.URI,
+        defaultVersion: `${defaultVersion}`,
       })
-    )
-    .useGlobalInterceptors(new TransformInterceptor())
-    .setGlobalPrefix(globalPrefix)
-    .enableVersioning({
-      type: VersioningType.URI,
-      defaultVersion: `${defaultVersion}`,
-    })
-    .enableCors();
+      .enableCors()
+  );
 }
 
 async function bootstrap() {
@@ -65,7 +69,8 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
-  const port = process.env.PORT || 3000;
+
+  const port = process.env.PORT || 3001;
   setupGlobalMiddlewares(app);
   setupSwagger(app);
   await app.listen(port);

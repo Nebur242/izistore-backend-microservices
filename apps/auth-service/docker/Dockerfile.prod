@@ -1,0 +1,41 @@
+# Build stage
+FROM node:18-alpine as builder
+
+WORKDIR /usr/src/app
+
+# Copy package files
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npx nx build auth-service --configuration=production
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+# Copy package files
+COPY package*.json ./
+COPY nx.json ./
+
+# Install production dependencies only
+RUN npm ci --production
+
+# Copy built application from builder stage
+COPY --from=builder /usr/src/app/dist/apps/auth-service ./dist
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3002
+
+EXPOSE 3002
+
+CMD ["node", "dist/main.js"]
