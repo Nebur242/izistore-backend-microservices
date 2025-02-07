@@ -22,19 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
-
-      - name: Reset NX
-        run: npx nx reset
-
-      - name: Show affected projects
-        run: npx nx show projects --type app --affected --verbose
-
-      - name: Get affected apps
-        id: nx-affected
-        run: |
-          AFFECTED=$(npx nx show projects --type app --affected)
-          echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
+        run: npm install -f
 
   test-and-build:
     needs: [detect-changes]

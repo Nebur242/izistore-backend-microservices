@@ -1,6 +1,8 @@
 # Node modules
 node_modules
 
+coverage
+
 # Logs
 logs
 *.log
@@ -65,3 +67,5 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 apps/**/*/.nx/*
+
+.husky
