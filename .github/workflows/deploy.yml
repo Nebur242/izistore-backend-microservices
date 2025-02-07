@@ -37,7 +37,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm install -f --ignore-scripts
 
       - name: Run linting
         run: npx nx affected --target=lint
