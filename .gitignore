@@ -43,4 +43,12 @@ Thumbs.db
 apps/**/*/.nx/*
 
 .env
+apps/**/.env.production
 cd.test.yml
+
+# Next.js
+.next
+out
+apps/**/.env.prod
+apps/**/.env
+

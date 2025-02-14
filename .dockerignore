@@ -67,5 +67,6 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 apps/**/*/.nx/*
+apps/**/*/.next/*
 
 .husky

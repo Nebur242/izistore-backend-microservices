@@ -1,41 +1,31 @@
-# Build stage
 FROM node:18-alpine as builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig*.json ./
+# Copy only files needed for build
+COPY package*.json nx.json tsconfig*.json ./
+COPY apps/auth-service ./apps/auth-service
+COPY libs ./libs
 
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build the application
-RUN npx nx build auth-service --configuration=production
+# Install dependencies and build
+RUN npm install --force
+RUN npx nx build auth-service --configuration=production --verbose
 
 # Production stage
 FROM node:18-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY nx.json ./
 
-# Install production dependencies only
-RUN npm ci --production
+# Copy only production dependencies and built app
+COPY --from=builder /app/dist/apps/auth-service/package*.json ./
+RUN npm install --force
 
-# Copy built application from builder stage
-COPY --from=builder /usr/src/app/dist/apps/auth-service ./dist
+COPY --from=builder /app/dist/apps/auth-service ./
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3002
+ENV NODE_ENV=production \
+    PORT=3002
 
 EXPOSE 3002
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "main.js"]

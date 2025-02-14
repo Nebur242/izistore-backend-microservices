@@ -35,7 +35,11 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/api-gateway-e2e/**/*", "apps/auth-service-e2e/**/*"]
+      "exclude": [
+        "apps/api-gateway-e2e/**/*",
+        "apps/auth-service-e2e/**/*",
+        "apps/deployment-service-e2e/**/*"
+      ]
     }
   ],
   "targetDefaults": {
@@ -43,6 +47,10 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "e2e-ci--**/*": {
+      "dependsOn": ["^build"]
     }
-  }
+  },
+  "generators": {}
 }

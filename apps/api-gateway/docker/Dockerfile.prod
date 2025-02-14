@@ -1,41 +1,30 @@
-# Build stage
 FROM node:18-alpine as builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig*.json ./
+# Copy only files needed for build
+COPY package*.json nx.json tsconfig*.json ./
+COPY apps/api-gateway ./apps/api-gateway
+COPY libs ./libs
 
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build the application
-RUN npx nx build api-gateway --configuration=production
+# Install dependencies and build
+RUN npm install --force
+RUN npx nx build api-gateway --configuration=production --verbose
 
 # Production stage
 FROM node:18-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY nx.json ./
+# Copy only production dependencies and built app
+COPY --from=builder /app/dist/apps/api-gateway/package*.json ./
+RUN npm install --force
 
-# Install production dependencies only
-RUN npm ci --production
+COPY --from=builder /app/dist/apps/api-gateway ./
 
-# Copy built application from builder stage
-COPY --from=builder /usr/src/app/dist/apps/api-gateway ./dist
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3001
+ENV NODE_ENV=production \
+    PORT=3001
 
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "main.js"]

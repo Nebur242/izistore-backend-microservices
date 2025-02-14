@@ -1,55 +1,82 @@
-name: Production CI/CD Pipeline
-
+name: Deploy to DigitalOcean
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  detect-changes:
+  deploy:
     runs-on: ubuntu-latest
-    outputs:
-      affected: ${{ steps.nx-affected.outputs.affected }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install -f
+        run: npm ci
 
-  test-and-build:
-    needs: [detect-changes]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Fetch Doppler Secrets
+        run: |
+          doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
+          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
+          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
+          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
         with:
-          node-version: '18'
-          cache: 'npm'
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+          if_key_exists: replace
 
-      - name: Install dependencies
-        run: npm install -f --ignore-scripts
+      - name: Add known hosts
+        run: ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
 
-      - name: Run linting
-        run: npx nx affected --target=lint
+      - name: Copy docker-compose files
+        run: |
+          scp docker-compose.prod.yml root@${{ secrets.DROPLET_IP }}:/root/maketou/
 
-      #   - name: Run tests
-      #     run: npx nx affected --target=test --configuration=production --coverage
+      - name: Copy nginx config
+        run: |
+          scp nginx.conf root@${{ secrets.DROPLET_IP }}:/root/maketou/
 
-      - name: Build applications
-        run: npx nx affected --target=build --configuration=production
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@master
         with:
-          name: dist
-          path: dist/
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /root/maketou
+
+            # Pull latest changes
+            git pull origin main
+
+            # Install Doppler if not already installed
+            if ! command -v doppler &> /dev/null; then
+              (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh || wget -t 3 -qO- https://cli.doppler.com/install.sh) | sudo sh
+            fi
+
+            # Setup Doppler
+            doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
+            doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
+            doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
+            doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
+
+            # Build and deploy using Doppler
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            # Clean up old images
+            docker image prune -f
