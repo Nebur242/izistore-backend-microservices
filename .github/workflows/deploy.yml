@@ -43,13 +43,13 @@ jobs:
       - name: Add known hosts
         run: ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
 
-      - name: Copy docker-compose files
-        run: |
-          scp -i ${{secrets.SSH_PRIVATE_KEY}} docker-compose.prod.yml root@${{ secrets.DROPLET_IP }}:/root/maketou/
+      # - name: Copy docker-compose files
+      #   run: |
+      #     scp docker-compose.prod.yml root@${{ secrets.DROPLET_IP }}:/root/maketou/
 
-      - name: Copy nginx config
-        run: |
-          scp nginx.conf root@${{ secrets.DROPLET_IP }}:/root/maketou/
+      # - name: Copy nginx config
+      #   run: |
+      #     scp nginx.conf root@${{ secrets.DROPLET_IP }}:/root/maketou/
 
       - name: Deploy to DigitalOcean
         uses: appleboy/ssh-action@master
