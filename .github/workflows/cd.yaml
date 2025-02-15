@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to DigitalOcean
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.CLUSTER_NAME }}
+
+      - name: Create secrets
+        run: |
+          chmod +x k8s/scripts/create-secrets.sh
+          ./k8s/scripts/create-secrets.sh
+        env:
+          KUBECONFIG: ${{ steps.kubeconfig.outputs.kubeconfig }}
+
+      - name: Deploy to DigitalOcean Kubernetes
+        run: |
+          # Update deployment files with actual Docker image names
+          cd k8s/base
+          sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' api-gateway.yaml auth-service.yaml
+
+          # Apply Kubernetes manifests
+          kubectl apply -k k8s/overlays/prod
+
+          # Verify deployment
+          kubectl rollout status deployment/api-gateway -n prod
+          kubectl rollout status deployment/auth-service -n prod

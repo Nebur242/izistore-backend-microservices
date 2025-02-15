@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - api-gateway.yaml
+  - auth-service.yaml
+  - redis.yaml
+  - postgres.yaml
+  - ingress.yaml
+
+configMapGenerator:
+  - name: app-config
+    literals:
+      - REDIS_HOST=redis-service
+      - REDIS_PORT=6379
+      - DB_HOST=postgres-service
+      - DB_PORT=5432
+      - NODE_ENV=production
+      - AUTH_SERVICE_HOST=auth-service-service
+      - AUTH_SERVICE_PORT=80
+      - API_GATEWAY_HOST=api-gateway-service
+      - API_GATEWAY_PORT=80
+
+secretGenerator:
+  - name: app-secrets
+    envs:
+      - secrets/.env.prod
