@@ -17,6 +17,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.CLUSTER_NAME }}
+
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
@@ -26,14 +34,6 @@ jobs:
           doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
           doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
           doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
-
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-
-      - name: Save DigitalOcean kubeconfig
-        run: doctl kubernetes cluster kubeconfig save ${{ secrets.CLUSTER_NAME }}
 
       - name: Update kustomization files
         run: |
@@ -69,20 +69,23 @@ jobs:
           secretGenerator:
             - name: app-secrets
               files:
-                - /home/project/apps/api-gateway/.env.prod
-                - /home/project/apps/auth-service/.env.prod
+                - apps/api-gateway/.env.prod
+                - apps/auth-service/.env.prod
             - name: docker-registry-secret
               type: kubernetes.io/dockerconfigjson
               literals:
                 - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${{ secrets.DOCKER_USERNAME }}","password":"${{ secrets.DOCKER_PASSWORD }}","auth":"$(echo -n "${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }}" | base64)"}}}' 
           EOF
 
-      - name: Create secrets
+      - name: Create Docker Registry Secret
         run: |
-          chmod +x k8s/scripts/create-secrets.sh
-          DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} ./k8s/scripts/create-secrets.sh
-        env:
-          KUBECONFIG: ${{ steps.kubeconfig.outputs.kubeconfig }}
+          kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret docker-registry docker-registry-secret \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username="${{ secrets.DOCKER_USERNAME }}" \
+            --docker-password="${{ secrets.DOCKER_PASSWORD }}" \
+            --namespace=prod \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy to DigitalOcean Kubernetes
         run: |
