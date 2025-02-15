@@ -25,3 +25,7 @@ secretGenerator:
   - name: app-secrets
     envs:
       - secrets/.env.prod
+  - name: docker-registry-secret
+    type: kubernetes.io/dockerconfigjson
+    literals:
+      - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${DOCKER_USERNAME}","password":"${DOCKER_PASSWORD}","auth":"'$(echo -n "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" | base64)"'"}}}'

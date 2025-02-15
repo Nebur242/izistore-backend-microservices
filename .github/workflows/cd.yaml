@@ -17,6 +17,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - name: Fetch Doppler Secrets
+        run: |
+          doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
+          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
+          doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
+          doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
+
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:

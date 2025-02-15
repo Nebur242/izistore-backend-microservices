@@ -31,6 +31,17 @@ create_namespace() {
     fi
 }
 
+# Create Docker registry secret
+create_docker_registry_secret() {
+    local namespace=$1
+    kubectl create secret docker-registry docker-registry-secret \
+        --docker-server=https://index.docker.io/v1/ \
+        --docker-username="${DOCKER_USERNAME}" \
+        --docker-password="${DOCKER_PASSWORD}" \
+        --namespace="$namespace" \
+        --dry-run=client -o yaml | kubectl apply -f -
+}
+
 # Main script
 ENVIRONMENTS=("dev" "prod")
 SERVICES=("api-gateway" "auth-service")
@@ -38,6 +49,9 @@ SERVICES=("api-gateway" "auth-service")
 for env in "${ENVIRONMENTS[@]}"; do
     # Create namespace
     create_namespace "$env"
+    
+    # Create Docker registry secret
+    create_docker_registry_secret "$env"
     
     # Initialize the secret creation command
     secret_command="kubectl create secret generic app-secrets -n $env"
