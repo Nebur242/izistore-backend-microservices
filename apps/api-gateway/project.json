@@ -8,7 +8,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "webpack --config apps/api-gateway/webpack.config.js",
+        "command": "webpack --config apps/api-gateway/webpack.config.js && cp apps/api-gateway/Dockerfile dist/apps/api-gateway/Dockerfile",
         "args": [],
         "assets": []
       },
@@ -17,7 +17,7 @@
           "command": "webpack --config apps/api-gateway/webpack.config.js --mode development"
         },
         "production": {
-          "command": "webpack --config apps/api-gateway/webpack.config.js --mode production"
+          "command": "webpack --config apps/api-gateway/webpack.config.js --mode production && cp apps/api-gateway/Dockerfile dist/apps/api-gateway/Dockerfile"
         }
       }
     },

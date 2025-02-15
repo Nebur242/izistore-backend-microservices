@@ -2,27 +2,27 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
-    name: Test
+    name: Install, Build & Test
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm install -f
-        
+
       - name: Run lint, build
         run: npx nx affected -t build lint
 
@@ -31,7 +31,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - uses: actions/checkout@v4
       - name: Install Doppler CLI
@@ -44,28 +44,27 @@ jobs:
           doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
           doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
 
-      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
+
       - name: Build and push api-gateway
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./apps/api-gateway/docker/Dockerfile.prod
+          file: ./dist/apps/api-gateway/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
-          
+
       - name: Build and push auth-service
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./apps/auth-service/docker/Dockerfile.prod
+          file: ./dist/apps/auth-service/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
