@@ -26,14 +26,15 @@ jobs:
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
-      - name: Setup SSH key
+      - name: Setup SSH key with passphrase
         run: |
           eval "$(ssh-agent -s)"
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PASSPHRASE }}" > /tmp/passphrase
+          chmod 600 /tmp/passphrase
+          SSH_ASKPASS=/tmp/askpass ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}")
+          rm -f /tmp/passphrase
+        env:
+          DISPLAY: ':0'
 
       - name: Setup remote directory
         uses: appleboy/ssh-action@master
@@ -75,8 +76,8 @@ jobs:
 
             mkdir -p apps/api-gateway apps/auth-service
             doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
-            doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
-            doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
+            doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
+            doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
 
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --build
