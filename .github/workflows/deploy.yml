@@ -45,7 +45,7 @@ jobs:
 
       - name: Copy docker-compose files
         run: |
-          scp docker-compose.prod.yml root@${{ secrets.DROPLET_IP }}:/root/maketou/
+          scp -i ${{secrets.SSH_PRIVATE_KEY}} docker-compose.prod.yml root@${{ secrets.DROPLET_IP }}:/root/maketou/
 
       - name: Copy nginx config
         run: |
