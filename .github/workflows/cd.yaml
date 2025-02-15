@@ -28,20 +28,23 @@ jobs:
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
+      - name: Create secrets directory
+        run: mkdir -p k8s/base/secrets
+
       - name: Fetch Doppler Secrets
         run: |
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
-          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > .env
-          doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/api-gateway/.env.prod
-          doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > apps/auth-service/.env.prod
+          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > k8s/base/secrets/.env
+          doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > k8s/base/secrets/api-gateway.env
+          doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > k8s/base/secrets/auth-service.env
 
-      - name: Update kustomization files
+      - name: Update base kustomization file
         run: |
           cd k8s/base
           # Replace Docker username in deployment files
           sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' api-gateway.yaml auth-service.yaml
 
-          # Create kustomization config with proper Docker credentials
+          # Update or create kustomization.yaml
           cat > kustomization.yaml << EOF
           apiVersion: kustomize.config.k8s.io/v1beta1
           kind: Kustomization
@@ -52,6 +55,16 @@ jobs:
             - redis.yaml
             - postgres.yaml
             - ingress.yaml
+
+          secretGenerator:
+            - name: app-secrets
+              files:
+                - secrets/api-gateway.env
+                - secrets/auth-service.env
+            - name: docker-registry-secret
+              type: kubernetes.io/dockerconfigjson
+              literals:
+                - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${{ secrets.DOCKER_USERNAME }}","password":"${{ secrets.DOCKER_PASSWORD }}","auth":"$(echo -n "${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }}" | base64)"}}}' 
 
           configMapGenerator:
             - name: app-config
@@ -65,16 +78,6 @@ jobs:
                 - AUTH_SERVICE_PORT=80
                 - API_GATEWAY_HOST=api-gateway-service
                 - API_GATEWAY_PORT=80
-
-          secretGenerator:
-            - name: app-secrets
-              files:
-                - apps/api-gateway/.env.prod
-                - apps/auth-service/.env.prod
-            - name: docker-registry-secret
-              type: kubernetes.io/dockerconfigjson
-              literals:
-                - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${{ secrets.DOCKER_USERNAME }}","password":"${{ secrets.DOCKER_PASSWORD }}","auth":"$(echo -n "${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }}" | base64)"}}}' 
           EOF
 
       - name: Create Docker Registry Secret
@@ -89,7 +92,7 @@ jobs:
 
       - name: Deploy to DigitalOcean Kubernetes
         run: |
-          # Apply Kubernetes manifests
+          # Apply Kubernetes manifests using the prod overlay
           kubectl apply -k k8s/overlays/prod
 
           # Verify deployment
