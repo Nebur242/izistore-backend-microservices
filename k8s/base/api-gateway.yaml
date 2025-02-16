@@ -24,7 +24,7 @@ spec:
             - secretRef:
                 name: maketou-secrets
             - secretRef:
-              name: api-gateway-secrets
+                name: api-gateway-secrets
           resources:
             requests:
               memory: '128Mi'

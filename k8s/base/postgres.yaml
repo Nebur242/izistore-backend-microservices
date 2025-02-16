@@ -9,6 +9,17 @@ spec:
     requests:
       storage: 1Gi
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secrets
+type: Opaque
+stringData:
+  DB_USER: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -32,12 +43,6 @@ spec:
           envFrom:
             - secretRef:
                 name: postgres-secrets
-                literals:
-                  # Redis secrets
-                  - DB_USER=postgres
-                  - POSTGRES_USER=postgres
-                  - POSTGRES_PASSWORD=postgres
-                  - POSTGRES_DB=postgres
           resources:
             requests:
               memory: '256Mi'
@@ -51,12 +56,12 @@ spec:
               subPath: postgres
           readinessProbe:
             exec:
-              command: ['pg_isready', '-U', '$(DB_USER)']
+              command: ['pg_isready', '-U', '$(POSTGRES_USER)']
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ['pg_isready', '-U', '$(DB_USER)']
+              command: ['pg_isready', '-U', '$(POSTGRES_USER)']
             initialDelaySeconds: 15
             periodSeconds: 20
       volumes:
