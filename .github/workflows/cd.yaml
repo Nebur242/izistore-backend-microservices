@@ -79,12 +79,9 @@ jobs:
           secretGenerator:
             - name: app-secrets
               files:
+                - secrets/.env
                 - secrets/api-gateway.env
                 - secrets/auth-service.env
-            - name: docker-registry-secret
-              type: kubernetes.io/dockerconfigjson
-              literals:
-                - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${{ secrets.DOCKER_USERNAME }}","password":"${{ secrets.DOCKER_PASSWORD }}","auth":"$(echo -n "${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }}" | base64)"}}}' 
 
           configMapGenerator:
             - name: app-config
