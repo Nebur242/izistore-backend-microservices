@@ -31,7 +31,7 @@ spec:
             - containerPort: 5432
           envFrom:
             - secretRef:
-                name: app-secrets
+                name: postgres-secrets
           resources:
             requests:
               memory: '256Mi'
@@ -42,14 +42,15 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+              subPath: postgres
           readinessProbe:
             exec:
-              command: ['pg_isready', '-U', 'postgres']
+              command: ['pg_isready', '-U', '$(DB_USER)']
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ['pg_isready', '-U', 'postgres']
+              command: ['pg_isready', '-U', '$(DB_USER)']
             initialDelaySeconds: 15
             periodSeconds: 20
       volumes:
