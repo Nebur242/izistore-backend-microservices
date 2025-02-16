@@ -57,7 +57,7 @@ jobs:
       - name: Update base kustomization file
         run: |
           cd k8s/base
-          cat .env
+          cat secrets/.env
           cat secrets/api-gateway.env
           cat secrets/auth-service.env
 
