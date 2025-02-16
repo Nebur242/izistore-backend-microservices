@@ -16,8 +16,9 @@ import { TestHelpersModule } from '../modules/test-helpers/test-helpers.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        ({
+      useFactory: (configService: ConfigService) => {
+        console.log(process.env);
+        return {
           host: configService.get('DB_HOST'),
           port: parseInt(configService.get('DB_PORT') || '5432'),
           database: configService.get('DB_NAME'),
@@ -29,7 +30,8 @@ import { TestHelpersModule } from '../modules/test-helpers/test-helpers.module';
           cache: true,
           autoLoadEntities: true,
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        } as TypeOrmModuleOptions),
+        } as TypeOrmModuleOptions;
+      },
     }),
     FirebaseModule.forRootAsync({
       imports: [ConfigModule],
