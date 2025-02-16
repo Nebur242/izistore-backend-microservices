@@ -23,6 +23,8 @@ spec:
                 name: app-config
             - secretRef:
                 name: api-gateway-secrets
+            - secretRef:
+                name: maketou-secrets
           resources:
             requests:
               memory: '128Mi'
