@@ -8,7 +8,7 @@ services:
     ports:
       - '3001:3001'
     environment:
-      env_file: './apps/api-gateway/.env.prod'
+      env_file: './apps/api-gateway/.env'
     restart: unless-stopped
     networks:
       - internal_network
@@ -23,7 +23,7 @@ services:
     ports:
       - '3002:3002'
     environment:
-      env_file: './apps/api-gateway/.env.prod'
+      env_file: './apps/auth-service/.env'
     restart: unless-stopped
     networks:
       - internal_network

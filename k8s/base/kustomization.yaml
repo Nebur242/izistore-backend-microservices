@@ -24,7 +24,7 @@ configMapGenerator:
 secretGenerator:
   - name: app-secrets
     envs:
-      - secrets/.env.prod
+      - secrets/.env
   - name: docker-registry-secret
     type: kubernetes.io/dockerconfigjson
     literals:

@@ -8,7 +8,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "webpack --config apps/auth-service/webpack.config.js && cp apps/auth-service/Dockerfile dist/apps/auth-service/Dockerfile",
+        "command": "webpack --config apps/auth-service/webpack.config.js",
         "args": [],
         "assets": []
       },
@@ -17,7 +17,7 @@
           "command": "webpack --config apps/auth-service/webpack.config.js --mode development"
         },
         "production": {
-          "command": "webpack --config apps/auth-service/webpack.config.js --mode production && cp apps/auth-service/Dockerfile dist/apps/auth-service/Dockerfile"
+          "command": "webpack --config apps/auth-service/webpack.config.js --mode production"
         }
       }
     },
