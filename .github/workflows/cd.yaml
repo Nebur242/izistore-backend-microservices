@@ -39,17 +39,6 @@ jobs:
 
       - name: Create Secrets from Doppler
         run: |
-          # Create Postgres secrets
-          {
-            echo "# Postgres Configuration"
-            doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file
-          } > temp_env
-          kubectl create secret generic postgres-secrets \
-            --namespace=prod \
-            --from-env-file=temp_env \
-            --dry-run=client -o yaml | kubectl apply -f -
-          rm temp_env
-
           # API Gateway secrets
           {
             doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file
