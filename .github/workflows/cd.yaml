@@ -109,22 +109,6 @@ jobs:
             --from-literal=API_GATEWAY_PORT=3001 \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Create PostgreSQL PVC
-        run: |
-          kubectl apply -f - <<EOF
-          apiVersion: v1
-          kind: PersistentVolumeClaim
-          metadata:
-            name: postgres-pvc
-            namespace: prod
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 1Gi
-          EOF
-
       - name: Update Deployment Files
         run: |
           # Update deployment files with Docker username
