@@ -11,21 +11,28 @@ resources:
 configMapGenerator:
   - name: app-config
     literals:
-      - REDIS_HOST=redis-service
+      # Redis Configuration
       - REDIS_PORT=6379
-      - DB_HOST=postgres-service
-      - DB_PORT=5432
-      - NODE_ENV=production
+      - REDIS_URL=redis://redis-service:6379
+      - REDIS_USER=default
+
+      # Service Configuration
       - AUTH_SERVICE_HOST=auth-service-service
       - AUTH_SERVICE_PORT=80
+
+      # Other configurations
+      - NODE_ENV=production
+      - DB_HOST=postgres-service
+      - DB_PORT=5432
       - API_GATEWAY_HOST=api-gateway-service
       - API_GATEWAY_PORT=80
 
 secretGenerator:
   - name: app-secrets
-    envs:
-      - secrets/.env
+    literals:
+      # Redis secrets
+      - REDIS_PASSWORD=redis-secret-password
   - name: docker-registry-secret
     type: kubernetes.io/dockerconfigjson
     literals:
-      - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${DOCKER_USERNAME}","password":"${DOCKER_PASSWORD}","auth":"'$(echo -n "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" | base64)"'"}}}'
+      - .dockerconfigjson='{"auths":{"https://index.docker.io/v1/":{"username":"${DOCKER_USERNAME}","password":"${DOCKER_PASSWORD}","auth":"$(echo -n "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" | base64)"}}}'
