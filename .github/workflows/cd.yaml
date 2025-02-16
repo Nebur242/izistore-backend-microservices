@@ -42,7 +42,7 @@ jobs:
           # Create Postgres secrets
           {
             echo "# Postgres Configuration"
-            doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file | grep -E "DB_"
+            doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file
           } > temp_env
           kubectl create secret generic postgres-secrets \
             --namespace=prod \
