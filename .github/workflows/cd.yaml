@@ -50,24 +50,30 @@ jobs:
             local json_file=$2
             local output_file=$3
             
-            # Create secret manifest with stringData
-            cat << EOF > "$output_file"
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: $name
-            namespace: prod
-          type: Opaque
-          stringData:
-          EOF
+            # Start YAML file
+            echo "apiVersion: v1" > "$output_file"
+            echo "kind: Secret" >> "$output_file"
+            echo "metadata:" >> "$output_file"
+            echo "  name: $name" >> "$output_file"
+            echo "  namespace: prod" >> "$output_file"
+            echo "type: Opaque" >> "$output_file"
+            echo "stringData:" >> "$output_file"
             
-            # Process JSON and add each key-value pair directly (no base64 encoding)
-            jq -r 'to_entries | .[] | "  \(.key): \"\(.value)\""' "$json_file" >> "$output_file"
+            # Process JSON and properly escape values
+            jq -r 'to_entries[] | "  \(.key): |-\n    \(.value | gsub("\\n";"\n    "))"' "$json_file" >> "$output_file"
           }
 
           # Create secret YAML files
           create_secret_yaml "api-gateway-secrets" "k8s/base/secrets/api-gateway.json" "k8s/base/secrets/api-gateway.yaml"
           create_secret_yaml "auth-service-secrets" "k8s/base/secrets/auth-service.json" "k8s/base/secrets/auth-service.yaml"
+
+          # Debug: Check the created YAML files (optional)
+          echo "Checking created secret files structure:"
+          for file in k8s/base/secrets/*.yaml; do
+            echo "=== $file ==="
+            head -n 5 "$file"
+            echo "..."
+          done
 
           # Apply secrets to cluster
           kubectl apply -f k8s/base/secrets/api-gateway.yaml
