@@ -17,20 +17,6 @@ import { TestHelpersModule } from '../modules/test-helpers/test-helpers.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        console.log({
-          host: configService.get('DB_HOST'),
-          port: parseInt(configService.get('DB_PORT') || '5432'),
-          database: configService.get('DB_NAME'),
-          logging: configService.get('DB_LOGGING') === 'true',
-          username: configService.get('DB_USER'),
-          password: configService.get('DB_PASSWORD'),
-          synchronize: configService.get('DB_SYNC') === 'true',
-          type: 'postgres',
-          cache: true,
-          autoLoadEntities: true,
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        });
-
         return {
           host: configService.get('DB_HOST'),
           port: parseInt(configService.get('DB_PORT') || '5432'),

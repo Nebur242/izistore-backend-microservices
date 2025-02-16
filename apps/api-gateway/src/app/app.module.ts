@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisModule, RedisModuleOptions } from '@izistore/redis';
-// import { validateEnvironment } from '../config/env.validator';
+import { validateEnvironment } from '../config/env.validator';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ProxyModule } from '../modules/proxy/proxy.module';
 import { AuthModule } from '../auth/auth.module';
@@ -13,16 +13,12 @@ import { FirebaseModule } from '@izistore/firebase';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // validate: validateEnvironment, // Validate environment variables
+      validate: validateEnvironment, // Validate environment variables
     }),
     ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
         useFactory: (configService: ConfigService) => {
-          console.log('typeof', typeof process.env);
-
-          console.log('process.env', process.env);
-          console.log(configService.get('AUTH_SERVICE_HOST'));
           return {
             transport: Transport.TCP,
             options: {
@@ -34,18 +30,18 @@ import { FirebaseModule } from '@izistore/firebase';
         inject: [ConfigService],
       },
     ]),
-    // RedisModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: (configService: ConfigService): RedisModuleOptions => ({
-    //     config: {
-    //       host: configService.get('REDIS_HOST', 'localhost'),
-    //       port: parseInt(configService.get('REDIS_PORT', '6379')),
-    //       password: configService.get('REDIS_PASSWORD'),
-    //       db: parseInt(configService.get('REDIS_DB', '0')),
-    //     },
-    //   }),
-    //   inject: [ConfigService],
-    // }),
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService): RedisModuleOptions => ({
+        config: {
+          host: configService.get('REDIS_HOST', 'localhost'),
+          port: parseInt(configService.get('REDIS_PORT', '6379')),
+          password: configService.get('REDIS_PASSWORD'),
+          db: parseInt(configService.get('REDIS_DB', '0')),
+        },
+      }),
+      inject: [ConfigService],
+    }),
     FirebaseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
