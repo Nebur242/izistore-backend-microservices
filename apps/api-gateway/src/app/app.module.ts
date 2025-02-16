@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisModule, RedisModuleOptions } from '@izistore/redis';
-import { validateEnvironment } from '../config/env.validator';
+// import { validateEnvironment } from '../config/env.validator';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ProxyModule } from '../modules/proxy/proxy.module';
 import { AuthModule } from '../auth/auth.module';
@@ -13,18 +13,21 @@ import { FirebaseModule } from '@izistore/firebase';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validate: validateEnvironment, // Validate environment variables
+      // validate: validateEnvironment, // Validate environment variables
     }),
     ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.get('AUTH_SERVICE_HOST'),
-            port: configService.get('AUTH_SERVICE_PORT'),
-          },
-        }),
+        useFactory: (configService: ConfigService) => {
+          console.log(process.env);
+          return {
+            transport: Transport.TCP,
+            options: {
+              host: configService.get('AUTH_SERVICE_HOST'),
+              port: configService.get('AUTH_SERVICE_PORT'),
+            },
+          };
+        },
         inject: [ConfigService],
       },
     ]),
