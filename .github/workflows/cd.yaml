@@ -100,8 +100,8 @@ jobs:
             --namespace=prod \
             --from-literal=REDIS_HOST=redis-service \
             --from-literal=REDIS_PORT=6379 \
-            --from-literal=DB_HOST=postgres-service \
-            --from-literal=DB_PORT=5432 \
+            --from-literal=DB_HOST=autorack.proxy.rlwy.net \
+            --from-literal=DB_PORT=27889 \
             --from-literal=NODE_ENV=production \
             --from-literal=AUTH_SERVICE_HOST=auth-service-service \
             --from-literal=AUTH_SERVICE_PORT=3002 \

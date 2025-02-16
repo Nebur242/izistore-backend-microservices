@@ -22,7 +22,7 @@ configMapGenerator:
 
       # Other configurations
       - NODE_ENV=production
-      - DB_HOST=postgres-service
+      - DB_HOST=autorack.proxy.rlwy.net
       - DB_PORT=5432
       - API_GATEWAY_HOST=api-gateway-service
       - API_GATEWAY_PORT=80
