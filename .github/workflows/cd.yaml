@@ -42,6 +42,10 @@ jobs:
 
           mkdir -p k8s/base/secrets
 
+          cat .env
+          cat apps/api-gateway/.env
+          cat apps/auth-service/.env
+
           kubectl create secret generic api-gateway-secrets --from-env-file=.env -o yaml --dry-run=client > k8s/base/secrets/apps.yaml
           kubectl create secret generic api-gateway-secrets --from-env-file=apps/api-gateway/.env -o yaml --dry-run=client > k8s/base/secrets/api-gateway.yaml
           kubectl create secret generic auth-service-secrets --from-env-file=apps/auth-service/.env -o yaml --dry-run=client > k8s/base/secrets/auth-service.yaml
