@@ -39,20 +39,20 @@ jobs:
             --project maketou \
             --config dev_auth-service \
             --token "${{ secrets.DOPPLER_TOKEN }}" \
-            download --format env --no-file | kubectl create secret generic auth-service-secrets \
-            --namespace=prod \
-            --from-env-file=/dev/stdin \
-            --dry-run=client -o yaml | kubectl apply -f -
+            download --format json --no-file > secrets.json
+
+          cat secrets.json | jq -r 'to_entries | .[] | "kubectl create secret generic auth-service-secrets --namespace=prod --from-literal=\(.key)=\(.value) --dry-run=client -o yaml | kubectl apply -f -"' | bash
+
 
           echo "Creating api-gateway secrets..."
           doppler secrets \
-            --project maketou \
-            --config dev_api-gateway \
-            --token "${{ secrets.DOPPLER_TOKEN }}" \
-            download --format env --no-file | kubectl create secret generic api-gateway-secrets \
-            --namespace=prod \
-            --from-env-file=/dev/stdin \
-            --dry-run=client -o yaml | kubectl apply -f -
+          --project maketou \
+          --config dev_api-gateway \
+          --token "${{ secrets.DOPPLER_TOKEN }}" \
+          download --format json --no-file > secrets.json
+
+          cat secrets.json | jq -r 'to_entries | .[] | "kubectl create secret generic api-gateway-secrets --namespace=prod --from-literal=\(.key)=\(.value) --dry-run=client -o yaml | kubectl apply -f -"' | bash
+
 
           # Create ConfigMap for shared configuration
           kubectl create configmap app-config \
