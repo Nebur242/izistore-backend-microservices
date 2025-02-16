@@ -12,8 +12,6 @@ spec:
       labels:
         app: auth-service
     spec:
-      imagePullSecrets:
-        - name: docker-registry-secret
       containers:
         - name: auth-service
           image: ${DOCKER_USERNAME}/auth-service:latest
@@ -24,7 +22,9 @@ spec:
             - configMapRef:
                 name: app-config
             - secretRef:
-                name: app-secrets
+                name: maketou-secrets
+            - secretRef:
+                name: auth-service-secrets
           resources:
             requests:
               memory: '128Mi'

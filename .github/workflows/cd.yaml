@@ -57,6 +57,7 @@ jobs:
       - name: Update base kustomization file
         run: |
           cd k8s/base
+          cat .env
           cat secrets/api-gateway.env
           cat secrets/auth-service.env
 
@@ -101,13 +102,9 @@ jobs:
 
       - name: Create Docker Registry Secret
         run: |
-          kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret docker-registry docker-registry-secret \
-            --docker-server=https://index.docker.io/v1/ \
-            --docker-username="${{ secrets.DOCKER_USERNAME }}" \
-            --docker-password="${{ secrets.DOCKER_PASSWORD }}" \
-            --namespace=prod \
-            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic maketou-secrets --from-file=k8s/base/secrets/.env
+          kubectl create secret generic api-gateway-secrets --from-file=k8s/base/secrets/api-gateway.env
+          kubectl create secret generic auth-service-secrets --from-file=k8s/base/secrets/auth-service.env
 
       - name: Deploy to DigitalOcean Kubernetes
         run: |
