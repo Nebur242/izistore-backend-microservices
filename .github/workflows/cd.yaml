@@ -40,6 +40,8 @@ jobs:
           # Create namespace if it doesn't exist
           kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
 
+          mkdir -p k8s/base/secrets
+
           kubectl create secret generic api-gateway-secrets --from-env-file=.env -o yaml --dry-run=client > k8s/base/secrets/apps.yaml
           kubectl create secret generic api-gateway-secrets --from-env-file=apps/api-gateway/.env -o yaml --dry-run=client > k8s/base/secrets/api-gateway.yaml
           kubectl create secret generic auth-service-secrets --from-env-file=apps/auth-service/.env -o yaml --dry-run=client > k8s/base/secrets/auth-service.yaml
