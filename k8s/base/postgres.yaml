@@ -15,7 +15,6 @@ metadata:
   name: postgres-secrets
 type: Opaque
 stringData:
-  DB_USER: postgres
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
   POSTGRES_DB: postgres
@@ -40,9 +39,22 @@ spec:
           image: postgres:14-alpine
           ports:
             - containerPort: 5432
-          envFrom:
-            - secretRef:
-                name: postgres-secrets
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretRef:
+                  name: postgres-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretRef:
+                  name: postgres-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretRef:
+                  name: postgres-secrets
+                  key: POSTGRES_DB
           resources:
             requests:
               memory: '256Mi'
@@ -56,12 +68,12 @@ spec:
               subPath: postgres
           readinessProbe:
             exec:
-              command: ['pg_isready', '-U', '$(POSTGRES_USER)']
+              command: ['pg_isready', '-U', 'postgres']
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ['pg_isready', '-U', '$(POSTGRES_USER)']
+              command: ['pg_isready', '-U', 'postgres']
             initialDelaySeconds: 15
             periodSeconds: 20
       volumes:

@@ -36,7 +36,6 @@ jobs:
           mkdir -p k8s/base/secrets
 
           # Fetch secrets from Doppler
-          doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/secrets/maketou.json
           doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/secrets/api-gateway.json
           doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/secrets/auth-service.json
 
@@ -45,13 +44,13 @@ jobs:
           # Create namespace if it doesn't exist
           kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
 
-          # Function to create secret YAML
+          # Function to create secret YAML with stringData
           create_secret_yaml() {
             local name=$1
             local json_file=$2
             local output_file=$3
             
-            # Create secret manifest
+            # Create secret manifest with stringData
             cat << EOF > "$output_file"
           apiVersion: v1
           kind: Secret
@@ -59,20 +58,18 @@ jobs:
             name: $name
             namespace: prod
           type: Opaque
-          data:
+          stringData:
           EOF
             
-            # Process JSON and add each key-value pair
-            jq -r 'to_entries | .[] | @sh "  \(.key): \(.value | @base64)"' "$json_file" >> "$output_file"
+            # Process JSON and add each key-value pair directly (no base64 encoding)
+            jq -r 'to_entries | .[] | "  \(.key): \"\(.value)\""' "$json_file" >> "$output_file"
           }
 
           # Create secret YAML files
-          create_secret_yaml "app-secrets" "k8s/base/secrets/maketou.json" "k8s/base/secrets/apps.yaml"
           create_secret_yaml "api-gateway-secrets" "k8s/base/secrets/api-gateway.json" "k8s/base/secrets/api-gateway.yaml"
           create_secret_yaml "auth-service-secrets" "k8s/base/secrets/auth-service.json" "k8s/base/secrets/auth-service.yaml"
 
           # Apply secrets to cluster
-          kubectl apply -f k8s/base/secrets/apps.yaml
           kubectl apply -f k8s/base/secrets/api-gateway.yaml
           kubectl apply -f k8s/base/secrets/auth-service.yaml
 
@@ -96,7 +93,7 @@ jobs:
           sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/api-gateway.yaml
           sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/auth-service.yaml
 
-      - name: Deploy to DigitalOcean Kubernetes
+      - name: Deploy Applications
         run: |
           # Apply Kubernetes manifests using the prod overlay
           kubectl apply -k k8s/overlays/prod
@@ -113,6 +110,11 @@ jobs:
 
           echo "Checking logs..."
           for pod in $(kubectl get pods -n prod -l app=api-gateway -o jsonpath='{.items[*].metadata.name}'); do
+            echo "Logs for $pod:"
+            kubectl logs -n prod $pod
+          done
+
+          for pod in $(kubectl get pods -n prod -l app=auth-service -o jsonpath='{.items[*].metadata.name}'); do
             echo "Logs for $pod:"
             kubectl logs -n prod $pod
           done
