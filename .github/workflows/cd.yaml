@@ -25,6 +25,9 @@ jobs:
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.CLUSTER_NAME }}
 
+      - name: Create secrets directory
+        run: mkdir -p k8s/base/secrets
+
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
@@ -34,9 +37,6 @@ jobs:
           doppler secrets --project maketou --config dev_maketou --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > k8s/base/secrets/.env
           doppler secrets --project maketou --config dev_api-gateway --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > k8s/base/secrets/api-gateway.env
           doppler secrets --project maketou --config dev_auth-service --token "${{ secrets.DOPPLER_TOKEN }}" download --format=env --no-file > k8s/base/secrets/auth-service.env
-
-      - name: Create secrets directory
-        run: mkdir -p k8s/base/secrets
 
       - name: Update base kustomization file
         run: |
