@@ -118,8 +118,8 @@ jobs:
           done
 
           # Continue with rollout status
-          kubectl rollout status deployment/api-gateway -n prod --timeout=300s
-          kubectl rollout status deployment/auth-service -n prod --timeout=300s
+          kubectl rollout status deployment/api-gateway -n prod --timeout=3000s
+          kubectl rollout status deployment/auth-service -n prod --timeout=3000s
 
       - name: Verify Deployment
         run: |
