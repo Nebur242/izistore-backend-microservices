@@ -95,6 +95,22 @@ jobs:
           # Apply Kubernetes manifests using the prod overlay
           kubectl apply -k k8s/overlays/prod
 
-          # Verify deployment
-          kubectl rollout status deployment/api-gateway -n prod
-          kubectl rollout status deployment/auth-service -n prod
+          # Wait for a moment to let pods start
+          sleep 30
+
+          # Debug information
+          echo "Checking pod status..."
+          kubectl get pods -n prod
+
+          echo "Checking pod details..."
+          kubectl describe pods -n prod
+
+          echo "Checking logs..."
+          for pod in $(kubectl get pods -n prod -l app=api-gateway -o jsonpath='{.items[*].metadata.name}'); do
+            echo "Logs for $pod:"
+            kubectl logs -n prod $pod
+          done
+
+          # Continue with rollout status
+          kubectl rollout status deployment/api-gateway -n prod --timeout=300s
+          kubectl rollout status deployment/auth-service -n prod --timeout=300s
