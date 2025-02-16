@@ -74,12 +74,22 @@ jobs:
             head -n 5 "$file"
             echo "..."
           done
+          # Create a temporary JSON file with the new values
+          cat << EOF > patch.json
+          {
+            "stringData": {
+              "POSTGRES_USER": "postgres",
+              "POSTGRES_PASSWORD": "postgres",
+              "POSTGRES_DB": "postgres"
+            }
+          }
+          EOF
 
-          kubectl create secret generic postgres-secrets \
-          --from-literal=POSTGRES_USER=postgres \
-          --from-literal=POSTGRES_PASSWORD=postgres \
-          --from-literal=POSTGRES_DB=postgres \
-          --namespace=prod
+          # Apply the patch
+          kubectl patch secret postgres-secrets -n prod --patch-file patch.json
+
+          # Clean up the temporary file
+          rm patch.json
 
           # Apply secrets to cluster
           kubectl apply -f k8s/base/secrets/api-gateway.yaml
