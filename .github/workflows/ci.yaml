@@ -41,6 +41,9 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
       - name: Fetch Doppler Secrets
         run: |
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
@@ -53,9 +56,6 @@ jobs:
 
       - name: Run build
         run: npx nx affected -t build
-
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
