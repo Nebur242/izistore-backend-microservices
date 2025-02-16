@@ -19,7 +19,10 @@ import { FirebaseModule } from '@izistore/firebase';
       {
         name: 'AUTH_SERVICE',
         useFactory: (configService: ConfigService) => {
-          console.log(process.env);
+          console.log('typeof', typeof process.env);
+
+          console.log('process.env', process.env);
+          console.log(configService.get('AUTH_SERVICE_HOST'));
           return {
             transport: Transport.TCP,
             options: {
