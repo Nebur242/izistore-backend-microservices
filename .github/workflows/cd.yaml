@@ -106,7 +106,7 @@ jobs:
             --from-literal=AUTH_SERVICE_HOST=auth-service-service \
             --from-literal=AUTH_SERVICE_PORT=3002 \
             --from-literal=API_GATEWAY_HOST=api-gateway-service \
-            --from-literal=API_GATEWAY_PORT=80 \
+            --from-literal=API_GATEWAY_PORT=3001 \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Create PostgreSQL PVC

@@ -32,14 +32,17 @@ import { FirebaseModule } from '@izistore/firebase';
     ]),
     RedisModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService): RedisModuleOptions => ({
-        config: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: parseInt(configService.get('REDIS_PORT', '6379')),
-          password: configService.get('REDIS_PASSWORD'),
-          db: parseInt(configService.get('REDIS_DB', '0')),
-        },
-      }),
+      useFactory: (configService: ConfigService): RedisModuleOptions => {
+        console.log('REDIS_HOST', configService.get('REDIS_HOST', 'localhost'));
+        return {
+          config: {
+            host: configService.get('REDIS_HOST', 'localhost'),
+            port: parseInt(configService.get('REDIS_PORT', '6379')),
+            password: configService.get('REDIS_PASSWORD'),
+            db: parseInt(configService.get('REDIS_DB', '0')),
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     FirebaseModule.forRootAsync({
