@@ -8,6 +8,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ProxyModule } from '../modules/proxy/proxy.module';
 import { AuthModule } from '../auth/auth.module';
 import { FirebaseModule } from '@izistore/firebase';
+import { firebaseConfig } from './firebase.config';
 
 @Module({
   imports: [
@@ -19,15 +20,11 @@ import { FirebaseModule } from '@izistore/firebase';
       {
         name: 'AUTH_SERVICE',
         useFactory: (configService: ConfigService) => {
-          console.log('typeof', typeof process.env);
-
-          console.log('process.env', process.env);
-          console.log(configService.get('AUTH_SERVICE_HOST'));
           return {
             transport: Transport.TCP,
             options: {
               host: configService.get('AUTH_SERVICE_HOST'),
-              port: configService.get('AUTH_SERVICE_PORT'),
+              port: 3002,
             },
           };
         },
@@ -38,10 +35,9 @@ import { FirebaseModule } from '@izistore/firebase';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService): RedisModuleOptions => ({
         config: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: parseInt(configService.get('REDIS_PORT', '6379')),
-          password: configService.get('REDIS_PASSWORD'),
-          db: parseInt(configService.get('REDIS_DB', '0')),
+          host: 'redis-service',
+          port: 6379,
+          password: 'redis-secret-password',
         },
       }),
       inject: [ConfigService],
@@ -50,10 +46,10 @@ import { FirebaseModule } from '@izistore/firebase';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        FIREBASE_PROJECT_ID: configService.get('FIREBASE_PROJECT_ID', ''),
-        FIREBASE_PRIVATE_KEY: configService.get('FIREBASE_PRIVATE_KEY', ''),
-        FIREBASE_CLIENT_EMAIL: configService.get('FIREBASE_CLIENT_EMAIL', ''),
-        FIREBASE_REST_API_KEY: configService.get('FIREBASE_REST_API_KEY', ''),
+        FIREBASE_PROJECT_ID: firebaseConfig.FIREBASE_PROJECT_ID,
+        FIREBASE_PRIVATE_KEY: firebaseConfig.FIREBASE_PRIVATE_KEY,
+        FIREBASE_CLIENT_EMAIL: firebaseConfig.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_REST_API_KEY: firebaseConfig.FIREBASE_REST_API_KEY,
       }),
     }),
     ProxyModule,
