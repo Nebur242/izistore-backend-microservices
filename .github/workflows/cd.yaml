@@ -96,11 +96,6 @@ jobs:
             sed -i "s|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g" $file
           done
 
-      - name: Update Postgres StatefulSet
-        run: |
-          # Update postgres.yaml to use postgres-secrets
-          sed -i 's/name: app-secrets/name: postgres-secrets/g' k8s/base/postgres.yaml
-
       - name: Deploy to DigitalOcean Kubernetes
         run: |
           # Apply Kubernetes manifests
@@ -123,6 +118,5 @@ jobs:
           done
 
           # Verify deployments
-          kubectl rollout status statefulset/postgres -n prod --timeout=300s
           kubectl rollout status deployment/api-gateway -n prod --timeout=300s
           kubectl rollout status deployment/auth-service -n prod --timeout=300s
