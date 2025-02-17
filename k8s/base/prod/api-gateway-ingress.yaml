@@ -5,7 +5,7 @@ metadata:
   namespace: prod
   annotations:
     cert-manager.io/cluster-issuer: 'letsencrypt-prod'
-    kubernetes.io/ingress.class: 'nginx'
+    kubernetes.io/ingress.ingressClassName: 'nginx'
 spec:
   tls:
     - hosts:
