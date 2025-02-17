@@ -2,7 +2,7 @@ name: CD
 
 on:
   workflow_run:
-    workflows: ['CI']
+    workflows: ['MAIN CI']
     types:
       - completed
     branches: [main]
@@ -33,10 +33,10 @@ jobs:
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
 
           # Create directories
-          mkdir -p k8s/base/secrets
+          mkdir -p k8s/base/prod/secrets
 
           # Fetch generic environment variables first
-          doppler secrets --project maketou --config prd_generic --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/secrets/generic-env.json
+          doppler secrets --project maketou --config prd_generic --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/prod/secrets/generic-env.json
 
           # Fetch service-specific secrets and merge with generic env vars
           merge_secrets() {
@@ -47,15 +47,15 @@ jobs:
             doppler secrets --project maketou --config "$service_config" --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > temp_secrets.json
             
             # Merge generic and service-specific secrets using jq
-            jq -s '.[0] * .[1]' k8s/base/secrets/generic-env.json temp_secrets.json > "$output_file"
+            jq -s '.[0] * .[1]' k8s/base/prod/secrets/generic-env.json temp_secrets.json > "$output_file"
             
             # Clean up temporary file
             rm temp_secrets.json
           }
 
           # Fetch and merge secrets for each service
-          merge_secrets "prd_api-gateway" "k8s/base/secrets/api-gateway.json"
-          merge_secrets "prd_auth-service" "k8s/base/secrets/auth-service.json"
+          merge_secrets "prd_api-gateway" "k8s/base/prod/secrets/api-gateway.json"
+          merge_secrets "prd_auth-service" "k8s/base/prod/secrets/auth-service.json"
 
       - name: Create Kubernetes Secrets
         run: |
@@ -82,26 +82,26 @@ jobs:
           }
 
           # Create secret YAML files
-          create_secret_yaml "api-gateway-secrets" "k8s/base/secrets/api-gateway.json" "k8s/base/secrets/api-gateway.yaml"
-          create_secret_yaml "auth-service-secrets" "k8s/base/secrets/auth-service.json" "k8s/base/secrets/auth-service.yaml"
+          create_secret_yaml "api-gateway-secrets" "k8s/base/prod/secrets/api-gateway.json" "k8s/base/prod/secrets/api-gateway.yaml"
+          create_secret_yaml "auth-service-secrets" "k8s/base/prod/secrets/auth-service.json" "k8s/base/prod/secrets/auth-service.yaml"
 
           # Debug: Check the created YAML files (optional)
           echo "Checking created secret files structure:"
-          for file in k8s/base/secrets/*.yaml; do
+          for file in k8s/base/prod/secrets/*.yaml; do
             echo "=== $file ==="
             head -n 5 "$file"
             echo "..."
           done
 
           # Apply secrets to cluster
-          kubectl apply -f k8s/base/secrets/api-gateway.yaml
-          kubectl apply -f k8s/base/secrets/auth-service.yaml
+          kubectl apply -f k8s/base/prod/secrets/api-gateway.yaml
+          kubectl apply -f k8s/base/prod/secrets/auth-service.yaml
 
       - name: Update Deployment Files
         run: |
           # Update deployment files with Docker username
-          sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/api-gateway.yaml
-          sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/auth-service.yaml
+          sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/prod/api-gateway.yaml
+          sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/prod/auth-service.yaml
 
       - name: Deploy Applications
         run: |

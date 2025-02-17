@@ -1,8 +1,10 @@
-name: MAIN CI
+name: CI
 
 on:
+  pull_request:
+    branches: [develop]
   push:
-    branches: [main]
+    branches: [develop]
 
 jobs:
   test:
@@ -24,7 +26,7 @@ jobs:
         run: npm install -f
 
       - name: Run lint, build
-        run: npx nx affected -t build lint --base=HEAD~1
+        run: npx nx affected -t build lint --base=develop
 
   build:
     name: Build and Push Docker Images
@@ -42,12 +44,6 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install -f
-
-      - name: Run build
-        run: npx nx affected -t build
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -63,7 +59,7 @@ jobs:
           context: .
           file: ./apps/api-gateway/docker/Dockerfile.prod
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:dev
 
       - name: Build and push auth-service
         uses: docker/build-push-action@v5
@@ -71,4 +67,4 @@ jobs:
           context: .
           file: ./apps/auth-service/docker/Dockerfile.prod
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:dev
