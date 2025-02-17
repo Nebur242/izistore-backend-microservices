@@ -1,8 +1,6 @@
 name: MAIN CI
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
 
@@ -26,7 +24,7 @@ jobs:
         run: npm install -f
 
       - name: Run lint, build
-        run: npx nx affected -t build lint
+        run: npx nx affected -t build lint --base=HEAD~1
 
   build:
     name: Build and Push Docker Images
