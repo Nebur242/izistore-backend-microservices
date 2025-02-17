@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - api-gateway-ingress.yaml
+  - api-gateway-service.yaml
   - api-gateway.yaml
   - auth-service.yaml
   - redis.yaml
@@ -26,9 +27,3 @@ configMapGenerator:
       - DB_PORT=27889
       - API_GATEWAY_HOST=api-gateway-service
       - API_GATEWAY_PORT=3001
-
-secretGenerator:
-  - name: app-secrets
-    literals:
-      # Redis secrets
-      - REDIS_PASSWORD=REDIS_PASSWORD
