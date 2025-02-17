@@ -103,32 +103,6 @@ jobs:
           sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/prod/api-gateway.yaml
           sed -i 's/${DOCKER_USERNAME}/${{ secrets.DOCKER_USERNAME }}/g' k8s/base/prod/auth-service.yaml
 
-      - name: Install Ingress NGINX using kubectl
-        run: |
-          # Check if the ingress-nginx namespace exists
-          if ! kubectl get namespace ingress-nginx >/dev/null 2>&1; then
-            echo "Creating ingress-nginx namespace..."
-            kubectl create namespace ingress-nginx
-          else
-            echo "Namespace ingress-nginx already exists."
-          fi
-
-          # Apply the official Kubernetes NGINX Ingress YAML
-          echo "Deploying NGINX Ingress Controller..."
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-
-          # Wait for the Ingress controller to be ready
-          echo "Waiting for ingress-nginx to be ready..."
-          kubectl wait --namespace ingress-nginx \
-            --for=condition=available deployment/ingress-nginx-controller \
-            --timeout=120s
-
-          # Verify if the admission webhook service is available
-          if ! kubectl get svc -n ingress-nginx | grep -q "ingress-nginx-controller-admission"; then
-            echo "Error: Ingress NGINX admission webhook service is missing!"
-            exit 1
-          fi
-
       - name: Deploy Applications
         run: |
           # Apply Kubernetes manifests using the prod overlay

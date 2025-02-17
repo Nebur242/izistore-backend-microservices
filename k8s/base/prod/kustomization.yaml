@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - api-gateway-ingress.yaml
-  - api-gateway-service.yaml
   - api-gateway.yaml
   - auth-service.yaml
   - redis.yaml
