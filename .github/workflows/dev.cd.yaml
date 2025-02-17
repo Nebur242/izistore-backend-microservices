@@ -5,7 +5,7 @@ on:
     workflows: ['CI']
     types:
       - completed
-    branches: [main]
+    branches: [develop]
 
 jobs:
   deploy:
@@ -36,7 +36,7 @@ jobs:
           mkdir -p k8s/base/secrets
 
           # Fetch generic environment variables first
-          doppler secrets --project maketou --config prd_generic --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/secrets/generic-env.json
+          doppler secrets --project maketou --config dev_generic --token "${{ secrets.DOPPLER_TOKEN }}" download --format=json --no-file > k8s/base/secrets/generic-env.json
 
           # Fetch service-specific secrets and merge with generic env vars
           merge_secrets() {
@@ -54,13 +54,13 @@ jobs:
           }
 
           # Fetch and merge secrets for each service
-          merge_secrets "prd_api-gateway" "k8s/base/secrets/api-gateway.json"
-          merge_secrets "prd_auth-service" "k8s/base/secrets/auth-service.json"
+          merge_secrets "dev_api-gateway" "k8s/base/secrets/api-gateway.json"
+          merge_secrets "dev_auth-service" "k8s/base/secrets/auth-service.json"
 
       - name: Create Kubernetes Secrets
         run: |
           # Create namespace if it doesn't exist
-          kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
 
           # Function to create secret YAML with stringData
           create_secret_yaml() {
@@ -73,7 +73,7 @@ jobs:
             echo "kind: Secret" >> "$output_file"
             echo "metadata:" >> "$output_file"
             echo "  name: $name" >> "$output_file"
-            echo "  namespace: prod" >> "$output_file"
+            echo "  namespace: dev" >> "$output_file"
             echo "type: Opaque" >> "$output_file"
             echo "stringData:" >> "$output_file"
             
@@ -105,42 +105,42 @@ jobs:
 
       - name: Deploy Applications
         run: |
-          # Apply Kubernetes manifests using the prod overlay
-          kubectl apply -k k8s/overlays/prod
+          # Apply Kubernetes manifests using the dev overlay
+          kubectl apply -k k8s/overlays/dev
 
           # Wait for deployments to roll out
           sleep 30
 
           # Debug information
           echo "Checking pod status..."
-          kubectl get pods -n prod
+          kubectl get pods -n dev
 
           echo "Checking pod details..."
-          kubectl describe pods -n prod
+          kubectl describe pods -n dev
 
           echo "Checking logs..."
-          for pod in $(kubectl get pods -n prod -l app=api-gateway -o jsonpath='{.items[*].metadata.name}'); do
+          for pod in $(kubectl get pods -n dev -l app=api-gateway -o jsonpath='{.items[*].metadata.name}'); do
             echo "Logs for $pod:"
-            kubectl logs -n prod $pod
+            kubectl logs -n dev $pod
           done
 
-          for pod in $(kubectl get pods -n prod -l app=auth-service -o jsonpath='{.items[*].metadata.name}'); do
+          for pod in $(kubectl get pods -n dev -l app=auth-service -o jsonpath='{.items[*].metadata.name}'); do
             echo "Logs for $pod:"
-            kubectl logs -n prod $pod
+            kubectl logs -n dev $pod
           done
 
           # Continue with rollout status
-          kubectl rollout status deployment/api-gateway -n prod --timeout=3000s
-          kubectl rollout status deployment/auth-service -n prod --timeout=3000s
+          kubectl rollout status deployment/api-gateway -n dev --timeout=3000s
+          kubectl rollout status deployment/auth-service -n dev --timeout=3000s
 
       - name: Verify Deployment
         run: |
           echo "Checking pod status..."
-          kubectl get pods -n prod
+          kubectl get pods -n dev
 
           echo "Checking services..."
-          kubectl get services -n prod
+          kubectl get services -n dev
 
           echo "Checking configmaps and secrets..."
-          kubectl get configmap -n prod
-          kubectl get secrets -n prod
+          kubectl get configmap -n dev
+          kubectl get secrets -n dev
