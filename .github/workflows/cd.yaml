@@ -28,37 +28,6 @@ jobs:
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
-      - name: Install cert-manager
-        run: |
-          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.2/cert-manager.yaml
-          # Wait for cert-manager to be ready
-          kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=cert-manager -n cert-manager --timeout=300s
-
-      - name: Install NGINX Ingress Controller
-        run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/do/deploy.yaml
-          # Wait for nginx controller to be ready
-          kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=controller -n ingress-nginx --timeout=300s
-
-      - name: Create ClusterIssuer
-        run: |
-          cat <<EOF | kubectl apply -f -
-          apiVersion: cert-manager.io/v1
-          kind: ClusterIssuer
-          metadata:
-            name: letsencrypt-prod
-          spec:
-            acme:
-              server: https://acme-v02.api.letsencrypt.org/directory
-              email: ${{ secrets.ACME_EMAIL }}
-              privateKeySecretRef:
-                name: letsencrypt-prod
-              solvers:
-              - http01:
-                  ingress:
-                    class: nginx
-          EOF
-
       - name: Fetch Doppler Secrets
         run: |
           doppler configure set token ${{ secrets.DOPPLER_TOKEN }}
@@ -179,11 +148,5 @@ jobs:
           echo "Checking ingress status..."
           kubectl get ingress -n prod
 
-          echo "Checking certificate status..."
-          kubectl get certificate -n prod
-
           echo "Checking services..."
           kubectl get services -n prod
-
-          echo "Checking NGINX Ingress Controller External IP..."
-          kubectl get svc -n ingress-nginx ingress-nginx-controller
