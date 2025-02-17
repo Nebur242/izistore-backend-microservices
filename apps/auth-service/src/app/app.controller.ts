@@ -10,7 +10,7 @@ export class AppController {
 
   @MessagePattern('ping_auth_service')
   getData(data: { message: string }) {
-    this.logger.log(data);
+    this.logger.log('data', data);
     return this.appService.getData();
   }
 }
