@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: ${DOCKER_USERNAME}/auth-service:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3002
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: auth-service-secrets
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+              cpu: '200m'
+          readinessProbe:
+            tcpSocket:
+              port: 3002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 3002
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 3002
+      targetPort: 3002
+  type: ClusterIP

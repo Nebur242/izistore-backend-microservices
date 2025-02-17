@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,10 +32,12 @@ jobs:
     name: Build and Push Docker Images
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,13 +60,22 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set Docker tag
+        id: set-tag
+        run: |
+          if [ ${{ github.ref }} = 'refs/heads/main' ]; then
+            echo "TAG=latest" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=dev" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push api-gateway
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./apps/api-gateway/docker/Dockerfile.prod
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:${{ steps.set-tag.outputs.TAG }}
 
       - name: Build and push auth-service
         uses: docker/build-push-action@v5
@@ -70,4 +83,4 @@ jobs:
           context: .
           file: ./apps/auth-service/docker/Dockerfile.prod
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ steps.set-tag.outputs.TAG }}
