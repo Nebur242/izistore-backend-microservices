@@ -13,7 +13,7 @@ import { FirebaseModule } from '@izistore/firebase';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validate: validateEnvironment, // Validate environment variables
+      validate: validateEnvironment,
     }),
     ClientsModule.registerAsync([
       {
